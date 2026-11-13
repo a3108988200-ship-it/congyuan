@@ -1,0 +1,10 @@
+{
+  "name": "conrad-notes-cloud",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "npm run build && node scripts/validate-artifact.mjs && node tests/cloud.test.mjs",
+    "preview": "node scripts/preview.mjs"
+  }
+}
