@@ -1,0 +1,2705 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070c16">
+  <title>外贸装柜 & 装箱方数智能测算工具 · 3D Container & CBM Calculator</title>
+  <style>
+    :root {
+      --ink: #111e28;
+      --ink-soft: #2c3e50;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --line-subtle: #edf2f7;
+      --panel: #ffffff;
+      --canvas: #f8fafc;
+      --primary: #0f766e;
+      --primary-hover: #0d5f58;
+      --primary-soft: #ccfbf1;
+      --primary-light: #f0fdfa;
+      --accent: #d97706;
+      --accent-soft: #fef3c7;
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --red: #dc2626;
+      --red-soft: #fee2e2;
+      --green: #16a34a;
+      --green-soft: #dcfce7;
+      --radius: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 28px -4px rgba(15,23,42,0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: var(--canvas);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { min-height: 100vh; padding: 18px 22px 30px; max-width: 1760px; margin: 0 auto; }
+    
+    /* Top Header */
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .brand-area { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #0f766e, #0e7490); color: white; display: grid; place-items: center; font-weight: 900; font-size: 18px; box-shadow: 0 4px 10px rgba(15,118,110,0.25); }
+    .brand-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); line-height: 1.25; }
+    .brand-subtitle { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+    
+    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .preset-dropdown { height: 34px; border-radius: 8px; border: 1px solid var(--line); background: white; padding: 0 10px; font-size: 12px; color: var(--ink-soft); font-weight: 600; outline: none; }
+    .preset-dropdown:focus { border-color: var(--primary); }
+    .btn-group { display: flex; border: 1px solid var(--line); border-radius: 8px; background: white; padding: 2px; }
+    .btn-group button { border: 0; background: transparent; border-radius: 6px; color: var(--muted); padding: 6px 12px; font-weight: 700; font-size: 12px; transition: all .15s; }
+    .btn-group button.active { background: var(--ink); color: white; }
+    .btn-action { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); background: white; color: var(--ink-soft); transition: all .15s; text-decoration: none; }
+    .btn-action:hover { background: #f1f5f9; border-color: #cbd5e1; color: var(--ink); }
+    .btn-action.primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-action.primary:hover { background: var(--primary-hover); }
+
+    /* Nav Tabs */
+    .nav-tabs { display: flex; gap: 6px; border-bottom: 2px solid var(--line); margin-bottom: 18px; }
+    .tab-btn { padding: 10px 18px; border: 0; background: transparent; font-size: 13px; font-weight: 700; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; border-radius: 6px 6px 0 0; }
+    .tab-btn:hover { color: var(--ink); background: rgba(0,0,0,0.02); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: white; }
+
+    /* Main Grid */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    
+    .workspace { display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 18px; align-items: start; }
+    
+    /* Left Form Sidebar */
+    .sidebar { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: visible; }
+    .sidebar-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; background: #fafbfc; }
+    .sidebar-head h2 { font-size: 14px; margin: 0; font-weight: 800; color: var(--ink); }
+    .sidebar-head .badge { font-size: 10px; background: var(--primary-soft); color: var(--primary); padding: 3px 8px; border-radius: 99px; font-weight: 700; }
+    
+    .form-content { padding: 14px 18px 20px; max-height: none; overflow: visible; }
+    .card-section { padding-bottom: 16px; margin-bottom: 14px; border-bottom: 1px solid var(--line-subtle); }
+    .card-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 4px; }
+    
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .sec-title { font-size: 12px; font-weight: 800; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+    .sec-num { width: 18px; height: 18px; border-radius: 4px; background: var(--primary-soft); color: var(--primary); display: grid; place-items: center; font-size: 10px; font-weight: 900; }
+    
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 10px; }
+    .field-grid.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { font-size: 11px; font-weight: 700; color: #475569; display: flex; justify-content: space-between; }
+    
+    input, select { width: 100%; height: 36px; border-radius: 7px; border: 1px solid #cbd5e1; background: white; color: var(--ink); padding: 0 10px; font-size: 13px; font-weight: 600; transition: all .15s; }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15,118,110,0.12); outline: none; }
+    input::placeholder { color: #94a3b8; font-weight: normal; }
+    
+    .segmented-control { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 3px; background: #f1f5f9; border-radius: 8px; margin-bottom: 10px; }
+    .segmented-control button { border: 0; background: transparent; border-radius: 6px; padding: 7px 4px; font-size: 11px; font-weight: 700; color: #64748b; transition: all .15s; text-align: center; }
+    .segmented-control button.selected { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
+    
+    .info-strip { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font-size: 11px; line-height: 1.5; color: #475569; margin-top: 8px; }
+    .info-strip b { color: var(--ink); }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+    
+    .btn-calc-max { width: 100%; background: #f0fdfa; border: 1px dashed var(--primary); color: var(--primary); border-radius: 7px; padding: 7px 10px; font-size: 11px; font-weight: 750; margin-top: 8px; transition: all .15s; }
+    .btn-calc-max:hover { background: var(--primary-soft); }
+
+    /* Action Buttons in Form */
+    .form-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 14px; }
+    .btn-main { height: 40px; border-radius: 8px; font-size: 13px; font-weight: 800; border: none; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .15s; box-shadow: 0 2px 4px rgba(15,118,110,0.2); }
+    .btn-main:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-reset { height: 40px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); background: white; color: #64748b; transition: all .15s; }
+    .btn-reset:hover { background: #f1f5f9; color: var(--ink); }
+    .validation-errors { margin-top:10px; padding:10px 12px; border:1px solid rgba(255,100,126,.48); border-radius:9px; background:rgba(255,100,126,.09); color:#ff9bab; font-size:12px; line-height:1.6; }
+    .validation-errors ul { margin:4px 0 0; padding-left:20px; }
+    .validation-errors[hidden] { display:none; }
+
+    /* Right 3D & Results Section */
+    .main-view { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+    
+    .viewport-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; position: relative; }
+    .viewport-bar { height: 48px; border-bottom: 1px solid var(--line); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #ffffff; }
+    .viewport-title { display: flex; align-items: center; gap: 8px; }
+    .viewport-title strong { font-size: 13px; font-weight: 800; color: var(--ink); }
+    .viewport-title span { font-size: 11px; color: var(--muted); background: #f1f5f9; padding: 2px 8px; border-radius: 99px; }
+    
+    .view-controls { display: flex; align-items: center; gap: 5px; }
+    .view-btn { height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: white; color: #475569; font-size: 11px; font-weight: 700; transition: all .15s; }
+    .view-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .view-btn.active { background: var(--primary-soft); color: var(--primary); border-color: #5eead4; }
+    
+    .viewport-canvas-container { position: relative; width: 100%; height: clamp(380px, 46vw, 560px); background: radial-gradient(circle at 50% 40%, #ffffff 0%, #f1f5f9 65%, #e2e8f0 100%); overflow: hidden; }
+    #threeScene { width: 100%; height: 100%; display: block; }
+    
+    .floating-overlay-card { position: absolute; left: 14px; top: 14px; z-index: 10; background: rgba(255,255,255,0.92); border: 1px solid rgba(226,232,240,0.9); border-radius: 8px; padding: 8px 12px; font-size: 11px; line-height: 1.5; backdrop-filter: blur(8px); box-shadow: var(--shadow-sm); }
+    .floating-overlay-card b { color: var(--ink); }
+    
+    .floating-legend { position: absolute; right: 14px; top: 14px; z-index: 10; background: rgba(255,255,255,0.92); border: 1px solid rgba(226,232,240,0.9); border-radius: 8px; padding: 8px 12px; font-size: 11px; backdrop-filter: blur(8px); display: flex; flex-direction: column; gap: 5px; box-shadow: var(--shadow-sm); }
+    .legend-row { display: flex; align-items: center; gap: 7px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend-cargo { background: linear-gradient(135deg,#d0a777,#e5c89d); }
+    .legend-container { background: #526c7d; }
+    
+    .camera-hints { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.68); color: white; font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 99px; pointer-events: none; letter-spacing: 0.02em; }
+    
+    /* Metrics Grid */
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .metric-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+    .metric-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--line); }
+    .metric-card.teal::before { background: var(--primary); }
+    .metric-card.amber::before { background: var(--accent); }
+    .metric-card.blue::before { background: var(--blue); }
+    .metric-card.green::before { background: var(--green); }
+    
+    .metric-title { font-size: 11px; font-weight: 750; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .metric-num { font-size: 22px; font-weight: 850; color: var(--ink); line-height: 1.15; letter-spacing: -0.03em; }
+    .metric-num small { font-size: 12px; font-weight: 600; color: #64748b; margin-left: 3px; }
+    .metric-foot { font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4; }
+    
+    /* Progress Bars & Utilization Card */
+    .utilization-card { background: white; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; box-shadow: var(--shadow-sm); }
+    .util-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 750; }
+    .util-bar-track { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 10px; position: relative; }
+    .util-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, #0d9488, #10b981); border-radius: 99px; transition: width .4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .util-bar-fill.overflow { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+    .util-details { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 11px; color: #475569; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+    .util-details b { color: var(--ink); font-size: 12px; display: block; margin-top: 2px; }
+
+    /* Summary Advice Banner */
+    .summary-banner { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 14px; font-size: 12px; line-height: 1.5; color: #115e59; }
+    .summary-banner b { color: #042f2e; font-size: 13px; }
+
+    /* Tab 2: Outer Carton Packaging Calculator */
+    .calculator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .calc-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+    .calc-card h3 { margin: 0 0 14px; font-size: 15px; font-weight: 800; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    
+    .table-responsive { overflow-x: auto; margin-top: 14px; }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+    table.data-table th, table.data-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+    table.data-table th { background: #f8fafc; color: #475569; font-weight: 750; }
+    table.data-table tr:hover td { background: #f1f5f9; }
+    
+    /* Tab 3: Container Specs Reference */
+    .specs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 10px; }
+    .spec-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); }
+    .spec-card-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--primary-soft); padding-bottom: 8px; margin-bottom: 12px; }
+    .spec-card-head h4 { margin: 0; font-size: 16px; font-weight: 850; color: var(--primary); }
+    .spec-card-head span { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .spec-list { display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: #475569; }
+    .spec-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line-subtle); padding-bottom: 4px; }
+    .spec-row span.label { color: #64748b; }
+    .spec-row span.val { font-weight: 750; color: var(--ink); }
+
+    /* Print Styles */
+    @media print {
+      body, .shell { background: white; padding: 0; }
+      .top-actions, .nav-tabs, .sidebar, .view-controls, .camera-hints { display: none !important; }
+      .workspace { display: block; }
+      .viewport-card { box-shadow: none; border: 1px solid #ccc; margin-bottom: 20px; }
+      .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 340px minmax(0, 1fr); gap: 14px; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .specs-grid { grid-template-columns: repeat(2, 1fr); }
+      .calculator-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 780px) {
+      .shell { padding: 12px; }
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { overflow: visible; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .specs-grid { grid-template-columns: 1fr; }
+      .util-details { grid-template-columns: repeat(2, 1fr); }
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Cyberpunk operations-console palette: dark surfaces, restrained cyan/violet neon. */
+    :root {
+      color-scheme: dark;
+      --ink: #e7f3ff;
+      --ink-soft: #bfd0e6;
+      --muted: #8da1bc;
+      --line: #263b55;
+      --line-subtle: #1b2b40;
+      --panel: #0d1727;
+      --canvas: #070c16;
+      --primary: #28e0eb;
+      --primary-hover: #64f2f4;
+      --primary-soft: rgba(40,224,235,.14);
+      --primary-light: #102634;
+      --accent: #ffb84d;
+      --accent-soft: rgba(255,184,77,.14);
+      --blue: #9d8cff;
+      --blue-soft: rgba(157,140,255,.15);
+      --red: #ff647e;
+      --red-soft: rgba(255,100,126,.14);
+      --green: #4be2b3;
+      --green-soft: rgba(75,226,179,.14);
+      --shadow-sm: 0 0 0 1px rgba(40,224,235,.045), 0 8px 24px rgba(0,0,0,.25);
+      --shadow-md: 0 0 0 1px rgba(40,224,235,.07), 0 12px 30px rgba(0,0,0,.32);
+      --shadow-lg: 0 0 34px rgba(40,224,235,.08), 0 18px 44px rgba(0,0,0,.42);
+      background: var(--canvas);
+    }
+    body {
+      background: radial-gradient(ellipse at 12% 0%, rgba(28,111,147,.17), transparent 36%),
+                  radial-gradient(ellipse at 92% 12%, rgba(114,62,159,.14), transparent 32%),
+                  #070c16;
+      color: var(--ink);
+    }
+    .shell { background-image: linear-gradient(rgba(33,66,91,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(33,66,91,.07) 1px, transparent 1px); background-size: 48px 48px; }
+    .brand-logo { background: linear-gradient(135deg,#0aa9c4,#6858d8); box-shadow: 0 0 20px rgba(40,224,235,.2); background-position:center; background-size:contain; background-repeat:no-repeat; }
+    .brand-logo.has-image { color:transparent; background-color:#f7f9fb; border:1px solid #304861; }
+    .brand-title, .sidebar-head h2, .viewport-title strong, .calc-card h3 { color: var(--ink); }
+    .brand-subtitle { color: #8ba9c4; }
+    .sidebar, .viewport-card, .metric-card, .utilization-card, .calc-card, .spec-card {
+      background: rgba(13,23,39,.96); border-color: var(--line); box-shadow: var(--shadow-sm);
+    }
+    .sidebar-head, .viewport-bar { background: rgba(12,22,38,.98); border-color: var(--line); }
+    .card-section { border-color: var(--line-subtle); }
+    .sec-title, .field label, .metric-title, .metric-foot, .spec-list { color: #a9bcd2; }
+    .sec-num { background: rgba(40,224,235,.13); color: #46eaf2; }
+    input, select, .preset-dropdown, .btn-group, .btn-action, .view-btn, .btn-reset {
+      background: #0a1423; color: #e7f3ff; border-color: #2a405b;
+    }
+    input::placeholder { color: #71869f; }
+    input:focus, select:focus, .preset-dropdown:focus { border-color: #28e0eb; box-shadow: 0 0 0 3px rgba(40,224,235,.14), 0 0 14px rgba(40,224,235,.08); }
+    select option { background: #0d1727; color: #e7f3ff; }
+    .btn-group button { color: #91a5bc; }
+    .btn-group button.active { background: #28e0eb; color: #07121c; box-shadow: 0 0 14px rgba(40,224,235,.18); }
+    .btn-action:hover, .btn-reset:hover, .view-btn:hover { background: #13243a; border-color: #3c5a78; color: #fff; }
+    .nav-tabs { border-color: #273d58; }
+    .tab-btn { color: #93a8c0; }
+    .tab-btn:hover { color: #e7f3ff; background: rgba(40,224,235,.06); }
+    .tab-btn.active { color: #3de5ee; border-bottom-color: #35e3ed; background: rgba(40,224,235,.055); text-shadow: 0 0 12px rgba(40,224,235,.2); }
+    .segmented-control { background: #091321; border: 1px solid #20354d; }
+    .segmented-control button { color: #8ea2ba; }
+    .segmented-control button.selected { background: #14283a; color: #48e7f0; box-shadow: inset 0 0 0 1px rgba(40,224,235,.36), 0 0 12px rgba(40,224,235,.08); }
+    .info-strip { background: #101d2e; border-color: #263d57; color: #b6c7db; }
+    .info-strip b { color: #ecf7ff; }
+    .btn-calc-max { background: rgba(40,224,235,.08); border-color: rgba(40,224,235,.55); color: #65edf2; }
+    .btn-calc-max:hover { background: rgba(40,224,235,.15); }
+    .btn-main { background: #16bccb; color: #06141d; box-shadow: 0 0 18px rgba(40,224,235,.22); }
+    .btn-main:hover { background: #4be7ee; }
+    .viewport-title span { background: #15253a; color: #9ec2dc; }
+    .view-btn.active { background: rgba(40,224,235,.12); color: #5ae9f0; border-color: #287888; }
+    .viewport-canvas-container { background: radial-gradient(circle at 48% 44%, #101c2e 0%, #0a1321 63%, #080e19 100%); }
+    .floating-overlay-card, .floating-legend { background: rgba(9,18,31,.86); border-color: rgba(63,203,225,.3); color: #bdd1e5; box-shadow: 0 8px 26px rgba(0,0,0,.25), 0 0 18px rgba(40,224,235,.06); }
+    .floating-overlay-card b { color: #f0f8ff; }
+    .camera-hints { position: absolute; top: 14px; bottom: auto; left: 50%; transform: translateX(-50%); background: rgba(7,15,27,.86); color: #c5d8eb; border: 1px solid rgba(48,202,224,.22); font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 99px; pointer-events: none; letter-spacing: 0.02em; z-index: 12; }
+
+    /* Progressive 3D Loading Animation HUD */
+    .anim-control-bar {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
+      background: rgba(8, 16, 28, 0.94);
+      border: 1px solid rgba(40, 224, 235, 0.38);
+      border-radius: 10px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px rgba(40,224,235,0.08);
+      z-index: 15;
+      flex-wrap: wrap;
+    }
+    .anim-actions { display: flex; align-items: center; gap: 6px; }
+    .anim-btn {
+      height: 29px;
+      padding: 0 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(40, 224, 235, 0.35);
+      background: #0d1e31;
+      color: #28e0eb;
+      font-size: 11px;
+      font-weight: 750;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .anim-btn:hover {
+      background: rgba(40, 224, 235, 0.18);
+      border-color: #28e0eb;
+      color: #fff;
+    }
+    .anim-btn.primary {
+      background: #16bccb;
+      color: #06141d;
+      border-color: #16bccb;
+      box-shadow: 0 0 12px rgba(40,224,235,0.25);
+    }
+    .anim-btn.primary:hover {
+      background: #4be7ee;
+    }
+    .anim-slider-group {
+      flex: 1;
+      min-width: 170px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .anim-slider {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #172a3f;
+      outline: none;
+      cursor: pointer;
+      accent-color: #28e0eb;
+    }
+    .anim-status-badge {
+      font-size: 11px;
+      font-weight: 750;
+      color: #e7f3ff;
+      white-space: nowrap;
+      background: #112338;
+      border: 1px solid #233e5c;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+    .anim-speed-group {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .anim-speed-btn {
+      height: 24px;
+      padding: 0 7px;
+      border-radius: 4px;
+      border: 1px solid #233e5c;
+      background: #0a1423;
+      color: #8da1bc;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .anim-speed-btn:hover {
+      color: #e7f3ff;
+      border-color: #3b5f85;
+    }
+    .anim-speed-btn.active {
+      background: rgba(40, 224, 235, 0.2);
+      color: #28e0eb;
+      border-color: #28e0eb;
+      box-shadow: 0 0 8px rgba(40,224,235,0.2);
+    }
+    .metric-card::before { background: #30445d; }
+    .metric-card.teal::before { background: #28e0eb; box-shadow: 0 0 12px #28e0eb; }
+    .metric-card.amber::before { background: #ffb84d; box-shadow: 0 0 10px rgba(255,184,77,.6); }
+    .metric-card.blue::before { background: #9d8cff; box-shadow: 0 0 10px rgba(157,140,255,.7); }
+    .metric-card.green::before { background: #4be2b3; box-shadow: 0 0 10px rgba(75,226,179,.6); }
+    .metric-title, .metric-num small, .metric-foot { color: #8fa5bf; }
+    .metric-num { color: #f0f7ff; text-shadow: 0 0 16px rgba(40,224,235,.08); }
+    .util-bar-track { background: #18283b; }
+    .util-bar-fill { background: linear-gradient(90deg,#1cbacb,#5f78f6,#b05bd6); box-shadow: 0 0 12px rgba(40,224,235,.35); }
+    .util-bar-fill.overflow { background: linear-gradient(90deg,#ffb84d,#ff557b); }
+    .util-details { color: #a8bbd0; border-color: #26384e; }
+    .util-details b { color: #eaf5ff; }
+    .summary-banner { background: linear-gradient(105deg,rgba(12,61,76,.54),rgba(37,26,64,.52)); border-color: rgba(40,224,235,.48); color: #c4d8e9; box-shadow: inset 3px 0 #28e0eb, 0 0 18px rgba(40,224,235,.06); }
+    .summary-banner b { color: #f0f8ff; }
+    .three-fallback { position:absolute; inset:0; display:grid; place-items:center; padding:24px; color:#c5d8eb; text-align:center; font-weight:700; pointer-events:none; background:rgba(8,14,25,.84); z-index:20; }
+    .three-fallback[hidden] { display:none; }
+    .settings-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:18px; background:rgba(2,7,16,.76); backdrop-filter:blur(8px); }
+    .settings-backdrop[hidden] { display:none; }
+    .settings-dialog { width:min(760px,100%); max-height:min(88vh,900px); overflow:auto; border:1px solid #2a4560; border-radius:16px; background:#0d1727; color:#e7f3ff; box-shadow:0 24px 80px rgba(0,0,0,.58),0 0 32px rgba(40,224,235,.1); }
+    .settings-head { position:sticky; top:0; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:18px 22px; background:#0d1727; border-bottom:1px solid #263b55; z-index:2; }
+    .settings-head h2 { margin:0; font-size:18px; }
+    .settings-close { width:36px; height:36px; border:1px solid #2a405b; border-radius:9px; color:#c5d8eb; background:#0a1423; font-size:20px; }
+    .settings-body { display:grid; gap:14px; padding:18px 22px 22px; }
+    .settings-section { display:grid; gap:12px; padding:16px; border:1px solid #20364f; border-radius:12px; background:#0a1423; }
+    .settings-section h3 { margin:0; color:#48e7f0; font-size:13px; }
+    .settings-section p { margin:0; color:#9bb0c7; font-size:12px; line-height:1.55; }
+    .settings-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .settings-field { display:grid; gap:5px; color:#b8c9dc; font-size:12px; font-weight:700; }
+    .settings-field input[type=color] { width:100%; height:38px; padding:3px; }
+    .settings-field input[type=file] { height:auto; padding:8px; }
+    .settings-check { display:flex; align-items:center; gap:8px; color:#b8c9dc; font-size:12px; font-weight:700; }
+    .settings-check input { width:16px; height:16px; accent-color:#28e0eb; }
+    .settings-feedback { min-height:16px; margin:0; color:#65e6bd!important; font-size:11px!important; }
+    .settings-brand-preview { display:flex; align-items:center; gap:12px; color:#a9bcd2; font-size:12px; }
+    .settings-brand-preview img { width:68px; height:48px; object-fit:contain; border:1px solid #304861; border-radius:8px; background:#111e30; }
+    .settings-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .settings-actions button, .template-remove { min-height:34px; padding:0 12px; border:1px solid #2a405b; border-radius:8px; background:#112338; color:#d9e8f6; font-weight:700; font-size:12px; }
+    .settings-actions button.primary { background:#16bccb; color:#06141d; border-color:#16bccb; }
+    .template-list { display:grid; gap:7px; }
+    .template-entry { display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid #1c3046; padding:6px 0; color:#cad9e9; font-size:12px; }
+    .template-actions { display:flex; gap:6px; flex-shrink:0; }
+    .template-apply { min-height:30px; padding:0 10px; border:1px solid rgba(40,224,235,.45); border-radius:7px; background:rgba(40,224,235,.1); color:#65edf2; font-weight:700; font-size:11px; }
+    .settings-note { border-left:3px solid #ffb84d; padding:9px 11px; color:#d7c5a6!important; background:rgba(255,184,77,.08); border-radius:4px; }
+    .accessory-cargo-list { display:grid; gap:10px; }
+    .accessory-cargo-item { padding:12px; border:1px solid #263b55; border-radius:10px; background:#0b1626; }
+    .accessory-cargo-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+    .accessory-cargo-title { display:flex; align-items:center; gap:8px; min-width:0; color:#d9e8f6; font-size:12px; font-weight:800; }
+    .accessory-cargo-swatch { width:10px; height:10px; flex:0 0 auto; border-radius:3px; box-shadow:0 0 8px currentColor; }
+    .accessory-cargo-remove { padding:5px 9px; border:1px solid #6a3445; border-radius:7px; background:#241521; color:#ff9bad; font-size:11px; font-weight:750; }
+    .accessory-cargo-remove:hover { background:#3a1c2a; border-color:#a84761; }
+    .accessory-cargo-controls { display:flex; gap:5px; flex-shrink:0; }
+    .accessory-cargo-move { min-width:30px; padding:4px 7px; border:1px solid #2a405b; border-radius:7px; background:#101d2e; color:#a9c4dc; font-size:11px; font-weight:750; }
+    .accessory-cargo-move:disabled { opacity:.35; cursor:not-allowed; }
+    .accessory-cargo-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px 10px; }
+    .accessory-cargo-grid .field { min-width:0; }
+    @media (max-width:780px) { .accessory-cargo-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:420px) { .accessory-cargo-grid { grid-template-columns:1fr; } }
+    .accessory-add-button { width:100%; min-height:38px; margin-top:10px; border:1px dashed rgba(40,224,235,.55); border-radius:9px; background:rgba(40,224,235,.07); color:#62e9f0; font-weight:800; }
+    .accessory-add-button:hover { background:rgba(40,224,235,.14); border-color:#28e0eb; }
+    .accessory-hint { margin:8px 0 0; color:#8299b3; font-size:11px; line-height:1.5; }
+    table.data-table th { background: #142237; color: #c4d6e9; }
+    table.data-table tr:hover td { background: #14243a; }
+    table.data-table td { color: #b8c9dc; }
+    .calc-card h3 { border-color: #2b415d; }
+    .spec-card-head { border-color: rgba(40,224,235,.42); }
+    .spec-card-head h4 { color: #45e1eb; }
+    .spec-list, .spec-row span.label { color: #a7bad0; }
+    .spec-row { border-color: #263950; }
+    .spec-row span.val { color: #e5f1fc; }
+    ::selection { background: rgba(40,224,235,.32); color: #fff; }
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-track { background: #09111d; }
+    ::-webkit-scrollbar-thumb { background: #2b4763; border: 2px solid #09111d; border-radius: 8px; }
+    @media print {
+      :root, body { color-scheme: light; background: white !important; color: #111 !important; }
+      .shell { background: white !important; }
+      .sidebar, .viewport-card, .metric-card, .utilization-card, .calc-card, .spec-card { background: white !important; color: #111 !important; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="brand-area">
+        <div class="brand-logo" id="brandLogoMark">3D</div>
+        <div>
+          <h1 class="brand-title">外贸装柜 & 装箱方数智能测算工具</h1>
+          <div class="brand-subtitle">CONTAINER LOAD & CBM CALCULATOR · 3D SIMULATION</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <!-- Preset Selector -->
+        <select id="presetSelector" class="preset-dropdown" title="加载示例模板">
+          <option value="demo1">📦 示例1：宠物智能喂食器外箱 (标准40HQ)</option>
+          <option value="demo2">📦 示例2：中号电子配件小箱 (散装20GP)</option>
+          <option value="demo3">🪵 示例3：欧美标准打托货物 (40HQ 打托)</option>
+          <option value="demo4">👕 示例4：轻纺服装纸箱 (40GP 散装)</option>
+        </select>
+        <button type="button" class="btn-action" id="btnSaveTemplate" title="把当前装柜参数保存为本机模板">＋ 保存模板</button>
+        
+        <!-- Language Switch -->
+        <div class="btn-group" role="group" aria-label="Language">
+          <button type="button" id="langZh" class="active">中文</button>
+          <button type="button" id="langEn">EN</button>
+        </div>
+
+        <button type="button" class="btn-action" id="btnSettings">⚙ 设置 Settings</button>
+
+        <!-- Print/Export Button -->
+        <button type="button" class="btn-action" onclick="window.print()" title="打印装柜测算单">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+          <span>打印/导出报告</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tabContainer">🚢 集装箱装柜 3D 测算 (Container Load)</button>
+      <button class="tab-btn" data-tab="tabCarton">📦 单箱/多箱方数与运费测算 (CBM Calculator)</button>
+      <button class="tab-btn" data-tab="tabSpecs">📋 标准集装箱规格对照表 (Container Specs)</button>
+    </nav>
+
+    <!-- TAB 1: 集装箱装柜 3D 测算 -->
+    <div id="tabContainer" class="tab-panel active">
+      <div class="workspace">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+          <div class="sidebar-head">
+            <h2>装柜计算参数</h2>
+            <span class="badge" id="calcUnitBadge">cm / kg</span>
+          </div>
+
+          <div class="form-content">
+            <!-- 01 柜型选择 -->
+            <section class="card-section">
+              <div class="sec-head">
+                <div class="sec-title"><span class="sec-num">1</span> <span>选择柜型 (Container Type)</span></div>
+              </div>
+              <div class="field full">
+                <select id="containerType">
+                  <option value="20GP">20GP · 20尺标准平柜 (标称 33.1 CBM / 实用 ~28 CBM)</option>
+                  <option value="40GP">40GP · 40尺标准平柜 (标称 67.5 CBM / 实用 ~58 CBM)</option>
+                  <option value="40HQ" selected>40HQ · 40尺高柜 (标称 76.1 CBM / 实用 ~68 CBM)</option>
+                </select>
+              </div>
+              <div class="info-strip flex-wrap" id="containerSpecBrief">
+                <!-- Injected via JS -->
+              </div>
+            </section>
+
+            <!-- 02 装载模式 -->
+            <section class="card-section">
+              <div class="sec-head">
+                <div class="sec-title"><span class="sec-num">2</span> <span>装载模式 (Loading Mode)</span></div>
+              </div>
+              <div class="segmented-control" id="loadModeControl">
+                <button type="button" class="selected" id="btnModeFloor" data-mode="floor">📦 散装直装 (Floor-loaded)</button>
+                <button type="button" id="btnModePallet" data-mode="pallet">🪵 托盘打托 (Palletized)</button>
+              </div>
+
+              <!-- Pallet Config (Only shown when Palletized) -->
+              <div id="palletConfigBox" style="display: none; margin-top: 10px;">
+                <div class="field full" style="margin-bottom: 8px;">
+                  <label><span>托盘规格预设</span></label>
+                  <select id="palletPresetSelect">
+                    <option value="120,80,15,15">欧标木托盘 (EUR 120 × 80 × 15 cm)</option>
+                    <option value="120,100,15,20">美标木托盘 (US 120 × 100 × 15 cm)</option>
+                    <option value="110,110,14,18">日韩标准托盘 (110 × 110 × 14 cm)</option>
+                    <option value="custom">自定义托盘尺寸...</option>
+                  </select>
+                </div>
+                <div class="field-grid">
+                  <div class="field"><label><span>托盘长 L (cm)</span></label><input type="number" id="palletL" value="120" min="10" step="0.5"></div>
+                  <div class="field"><label><span>托盘宽 W (cm)</span></label><input type="number" id="palletW" value="80" min="10" step="0.5"></div>
+                  <div class="field"><label><span>托盘高 H (cm)</span></label><input type="number" id="palletH" value="15" min="5" step="0.5"></div>
+                  <div class="field"><label><span>单托自重 (kg)</span></label><input type="number" id="palletTare" value="15" min="0" step="1"></div>
+                  <div class="field"><label><span>堆码层数 (Layers)</span></label><input type="number" id="palletLayers" value="5" min="1" max="15"></div>
+                  <div class="field"><label><span>每层箱数 (Boxes/Layer)</span></label><input type="number" id="palletPerLayer" value="6" min="1" max="50"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 03 主货物外箱参数 -->
+            <section class="card-section">
+              <div class="sec-head">
+                <div class="sec-title"><span class="sec-num">3</span> <span>主货外箱参数 (Main Cargo)</span></div>
+              </div>
+              <div class="field full" style="margin-bottom: 8px;">
+                <label><span>品名描述</span></label>
+                <input type="text" id="cargoName" value="智能宠物喂食器外箱" placeholder="例如：宠物用品">
+              </div>
+              <div class="field-grid grid-3">
+                <div class="field"><label><span>外箱长 L (cm)</span></label><input type="number" id="boxL" value="48" min="1" step="0.1"></div>
+                <div class="field"><label><span>外箱宽 W (cm)</span></label><input type="number" id="boxW" value="38" min="1" step="0.1"></div>
+                <div class="field"><label><span>外箱高 H (cm)</span></label><input type="number" id="boxH" value="32" min="1" step="0.1"></div>
+              </div>
+              <div class="field-grid" style="margin-top: 8px;">
+                <div class="field"><label><span>单箱毛重 Gross (kg)</span></label><input type="number" id="boxGross" value="11.5" min="0.1" step="0.1"></div>
+                <div class="field"><label><span>装运箱数 (Cartons)</span></label><input type="number" id="boxCount" value="680" min="1" step="1"></div>
+              </div>
+
+              <!-- Single Carton Calculated CBM summary -->
+              <div class="info-strip" style="margin-top: 8px;" id="singleCartonSummary">
+                <!-- JS populated -->
+              </div>
+
+              <!-- Quick Action: Fill Maximum Capacity -->
+              <button type="button" class="btn-calc-max" id="btnFillMaxCapacity">
+                ⚡ <span>自动按本柜型最大装载量填入箱数</span>
+              </button>
+
+              <!-- Orientation Controls -->
+              <div class="field full" style="margin-top: 8px;">
+                <label><span>纸箱摆放朝向规则</span></label>
+                <select id="boxOrientationRule">
+                  <option value="auto">🔄 智能最优：自动寻找装载量最多的朝向</option>
+                  <option value="upright">⬆️ 严格不可倒置：保持高度方向朝上 (仅长宽可调)</option>
+                  <option value="lengthwise">➡️ 长度沿柜长方向平放 (L-Parallel)</option>
+                  <option value="widthwise">⬅️ 宽度沿柜长方向平放 (W-Parallel)</option>
+                </select>
+              </div>
+            </section>
+
+            <!-- 04 配件箱 / 混装第二品类 (选填) -->
+            <section class="card-section">
+              <div class="sec-head">
+                <div class="sec-title"><span class="sec-num">4</span> <span>配件箱 / 辅货混装 (可选)</span></div>
+              </div>
+              <div id="accessoryCargoList" class="accessory-cargo-list"></div>
+              <button type="button" class="accessory-add-button" id="btnAddAccessoryCargo">添加一种货物</button>
+              <p class="accessory-hint">每种不同外箱单独添加；系统按顺序分区排布，并分别核算已装与未装数量。</p>
+            </section>
+
+            <!-- Action Buttons -->
+            <div class="form-actions">
+              <button type="button" class="btn-main" id="btnGenerate">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>生成 3D 装柜排布</span>
+              </button>
+              <button type="button" class="btn-reset" id="btnReset">清空重置</button>
+            </div>
+            <div class="validation-errors" id="validationErrors" role="alert" hidden></div>
+          </div>
+        </aside>
+
+        <!-- Right 3D Visualizer & Results Column -->
+        <main class="main-view">
+          <!-- 3D Viewport Card -->
+          <div class="viewport-card">
+            <div class="viewport-bar">
+              <div class="viewport-title">
+                <strong>3D 仿真装柜视图</strong>
+                <span id="containerDimBadge">40HQ · 12.032 × 2.352 × 2.690 m</span>
+              </div>
+              <div class="view-controls">
+                <button type="button" class="view-btn active" id="btnCutaway">剖切透视</button>
+                <button type="button" class="view-btn" id="btnFull">完整箱体</button>
+                <button type="button" class="view-btn" id="btnWireframe">线框轮廓</button>
+                <span style="color:#cbd5e1; margin:0 4px;">|</span>
+                <button type="button" class="view-btn" id="btnResetCamera" title="重置视角">🎯 重置视角</button>
+              </div>
+            </div>
+
+            <div class="viewport-canvas-container" id="canvasContainer">
+              <div id="threeScene"></div>
+              <div id="threeFallback" class="three-fallback" hidden>3D 渲染暂不可用；计算结果仍可正常使用。</div>
+              
+              <!-- Floating Dimensions Card -->
+              <div class="floating-overlay-card">
+                <div><b>柜内净尺寸:</b> <span id="overlayInsideDim">12.032 × 2.352 × 2.690 m</span></div>
+                <div><b>门口净尺寸:</b> <span id="overlayDoorDim">宽 2.340 × 高 2.580 m</span></div>
+                <div><b>柜体自重:</b> <span id="overlayTare">约 4.0 吨 (Tare)</span></div>
+              </div>
+
+              <!-- Floating Color Legend -->
+              <div class="floating-legend">
+                <div class="legend-row">
+                  <div class="legend-color legend-container" id="legendContainerColor"></div>
+                  <span>柜体钢板 / Container</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-color legend-cargo" id="legendCartonColor"></div>
+                  <span>多色纸箱 / Cartons</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-color" style="background: linear-gradient(135deg,#20d5e8,#ff4fa3);"></div>
+                  <span>配件箱</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-color" style="background: #78350f;"></div>
+                  <span>标准木托盘</span>
+                </div>
+              </div>
+
+              <!-- Camera Interaction Hint -->
+              <div class="camera-hints">🖱️ 左键旋转视角 · 滚轮缩放 · 右键平移</div>
+
+              <!-- Floating Animation Control Bar -->
+              <div class="anim-control-bar" id="animControlBar">
+                <div class="anim-actions">
+                  <button type="button" class="anim-btn primary" id="btnTogglePlay" title="播放/暂停装柜动画">
+                    <span id="btnPlayIcon">⏸️</span>
+                    <span id="btnPlayText">暂停</span>
+                  </button>
+                  <button type="button" class="anim-btn" id="btnReplayAnim" title="重新从第1件货物开始排布">
+                    <span>🔁</span>
+                    <span>重播</span>
+                  </button>
+                </div>
+
+                <div class="anim-slider-group">
+                  <input type="range" class="anim-slider" id="animProgressSlider" min="0" max="100" value="0" step="1" title="拖动进度条查看指定箱数装载状态">
+                  <div class="anim-status-badge" id="animStatusBadge">
+                    📦 正在装载: 0 / 0 箱 (0%)
+                  </div>
+                </div>
+
+                <div class="anim-speed-group">
+                  <span style="font-size:10px; color:#8da1bc; margin-right:2px;">速度:</span>
+                  <button type="button" class="anim-speed-btn" data-speed="0.5">0.5x</button>
+                  <button type="button" class="anim-speed-btn active" data-speed="1">1x</button>
+                  <button type="button" class="anim-speed-btn" data-speed="3">3x</button>
+                  <button type="button" class="anim-speed-btn" data-speed="8">8x</button>
+                  <button type="button" class="anim-speed-btn" data-speed="instant" title="直接瞬时装满">⚡直接装满</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics Key Performance Cards -->
+          <div class="metrics-grid">
+            <div class="metric-card teal">
+              <div class="metric-title">实际货物总体积 (Total CBM)</div>
+              <div class="metric-num" id="mTotalCbm">0.00 <small>m³</small></div>
+              <div class="metric-foot" id="mSingleCbmSub">单箱体积: 0.000 m³</div>
+            </div>
+
+            <div class="metric-card amber">
+              <div class="metric-title">已装箱数 / 需求箱数</div>
+              <div class="metric-num" id="mCartonRatio">0 / 0 <small>箱</small></div>
+              <div class="metric-foot" id="mGridArrangement">排布: 0列 × 0排 × 0层</div>
+            </div>
+
+            <div class="metric-card blue">
+              <div class="metric-title">货物总毛重 (Gross Weight)</div>
+              <div class="metric-num" id="mTotalWeight">0.00 <small>kg</small></div>
+              <div class="metric-foot" id="mWeightStatus">集装箱限载约 26.5 吨</div>
+            </div>
+
+            <div class="metric-card green" id="cardRemaining">
+              <div class="metric-title">柜内剩余容积 (Remaining)</div>
+              <div class="metric-num" id="mRemainingCbm">0.00 <small>m³</small></div>
+              <div class="metric-foot" id="mRemainingSub">理论内体积 76.13 m³</div>
+            </div>
+          </div>
+
+          <!-- Space Utilization Progress Card -->
+          <div class="utilization-card">
+            <div class="util-header">
+              <span>📊 <span>空间容积利用率 (Space Utilization)</span></span>
+              <span id="utilizationPercent" style="font-size: 15px; color: var(--primary);">0.0%</span>
+            </div>
+            <div class="util-bar-track">
+              <div class="util-bar-fill" id="utilProgressBar" style="width: 0%;"></div>
+            </div>
+            <div class="util-details">
+              <div>
+                <span>集装箱标称体积:</span>
+                <b id="utilNominalCbm">76.13 CBM</b>
+              </div>
+              <div>
+                <span>建议安全装载量 (~88%):</span>
+                <b id="utilSafeCbm">67.00 CBM</b>
+              </div>
+              <div>
+                <span>已用体积 (含托盘):</span>
+                <b id="utilOccupiedCbm">0.00 CBM</b>
+              </div>
+              <div>
+                <span>货型分析 (重/泡货):</span>
+                <b id="utilCargoDensity" style="color: var(--primary);">轻泡货 (Volumetric)</b>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Advice Summary Banner -->
+          <div class="summary-banner" id="summaryBanner">
+            <div>
+              <b id="summaryBannerTitle">装载方案评估结论</b>
+              <div id="summaryBannerDesc" style="margin-top: 3px;">输入外箱尺寸与数量后，点击“生成 3D 装柜排布”即可查看完整的空间装载测算报告。</div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- TAB 2: 单箱/多箱方数与运费测算 (CBM Calculator) -->
+    <div id="tabCarton" class="tab-panel">
+      <div class="calculator-grid">
+        <!-- 单品装箱与外箱 CBM 测算器 -->
+        <div class="calc-card">
+          <h3>📐 单品装外箱 & 外箱方数测算</h3>
+          <p style="font-size: 12px; color: var(--muted); margin-top:-8px; margin-bottom:14px;">
+            根据单件商品内包装尺寸与装箱数，快速推算外箱长宽高、单箱体积 (CBM) 及总体积。
+          </p>
+
+          <div class="field-grid grid-3">
+            <div class="field"><label>单品内包装长 (cm)</label><input type="number" id="itemL" value="15" min="0.1" step="0.1"></div>
+            <div class="field"><label>单品内包装宽 (cm)</label><input type="number" id="itemW" value="12" min="0.1" step="0.1"></div>
+            <div class="field"><label>单品内包装高 (cm)</label><input type="number" id="itemH" value="8" min="0.1" step="0.1"></div>
+          </div>
+
+          <div class="field-grid" style="margin-top: 10px;">
+            <div class="field"><label>单品净重 (kg/件)</label><input type="number" id="itemNetWeight" value="0.45" min="0" step="0.01"></div>
+            <div class="field"><label>单箱装箱数 (pcs/ctn)</label><input type="number" id="itemPackQty" value="24" min="1" step="1"></div>
+          </div>
+
+          <div class="field-grid" style="margin-top: 10px;">
+            <div class="field"><label>外箱纸板预留余量 (cm)</label><input type="number" id="cartonMargin" value="2.0" min="0" step="0.5"></div>
+            <div class="field"><label>空箱自重 (kg)</label><input type="number" id="emptyCartonWeight" value="0.8" min="0" step="0.1"></div>
+          </div>
+
+          <div class="field full" style="margin-top: 10px;">
+            <label>计划总生产/出货件数 (Total Pcs)</label>
+            <input type="number" id="totalProductPcs" value="2400" min="1" step="1">
+          </div>
+
+          <div class="info-strip" id="cartonPackResultStrip" style="margin-top: 14px; background: #f0fdfa; border-color: #99f6e4;">
+            <!-- JS populated result -->
+          </div>
+        </div>
+
+        <!-- 国际货运计费重量 & 重泡货测算器 -->
+        <div class="calc-card">
+          <h3>✈️ 国际快递 / 空运 / 海运计费重对照</h3>
+          <p style="font-size: 12px; color: var(--muted); margin-top:-8px; margin-bottom:14px;">
+            测算国际货代结算时的计费重量 (Chargeable Weight) 及拼箱计费吨 (Revenue Ton)。
+          </p>
+
+          <div class="table-responsive">
+            <table class="data-table" id="freightCompareTable">
+              <thead>
+                <tr>
+                  <th>运输方式</th>
+                  <th>体积重换算系数</th>
+                  <th>体积重量 (kg)</th>
+                  <th>实际毛重 (kg)</th>
+                  <th>最终计费标准</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>国际商业快递 (DHL/FedEx)</b></td>
+                  <td>1 : 5000 (长×宽×高 / 5000)</td>
+                  <td id="expVolWeight">-</td>
+                  <td id="expActWeight">-</td>
+                  <td id="expBillWeight" style="color:var(--primary); font-weight:800;">-</td>
+                </tr>
+                <tr>
+                  <td><b>国际空运专线 (Air Freight)</b></td>
+                  <td>1 : 6000 (长×宽×高 / 6000)</td>
+                  <td id="airVolWeight">-</td>
+                  <td id="airActWeight">-</td>
+                  <td id="airBillWeight" style="color:var(--primary); font-weight:800;">-</td>
+                </tr>
+                <tr>
+                  <td><b>海运散货拼箱 (LCL)</b></td>
+                  <td>1 CBM = 1000 kg (1:1000)</td>
+                  <td id="lclCbmVal">-</td>
+                  <td id="lclWeightTon">-</td>
+                  <td id="lclBillingTon" style="color:var(--primary); font-weight:800;">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-strip" style="margin-top: 16px;">
+            <b>💡 重货与轻泡货判定规则：</b>
+            <div style="margin-top: 4px; font-size: 11px; line-height: 1.6;">
+              • <b>海运拼箱标准</b>：如果 1 立方米货物重量 <b>&gt; 363 kg</b> 或 <b>&gt; 500 kg/1000 kg</b>（视航线），按重货计费；否则按体积计费。<br>
+              • <b>空运快递标准</b>：实际毛重与体积重量取<b>较大者</b>作为计费重。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: 标准集装箱规格对照表 -->
+    <div id="tabSpecs" class="tab-panel">
+      <div class="calc-card">
+        <h3>📋 常见海运标准集装箱 (Standard Shipping Containers) 规格参数与装载参考</h3>
+        <p style="font-size: 12px; color: var(--muted); margin-top:-6px; margin-bottom:14px;">
+          注：以下为国际海运标准 ISO 集装箱尺寸与容积，不同船公司/箱体制造厂可能有几厘米的微小公差，装柜时建议预留 5%~10% 的安全操作余量。
+        </p>
+
+        <div class="specs-grid">
+          <!-- 20GP -->
+          <div class="spec-card">
+            <div class="spec-card-head">
+              <h4>20GP 标准小柜</h4>
+              <span>20' General Purpose</span>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row"><span class="label">外部尺寸 (L×W×H):</span><span class="val">6.058 × 2.438 × 2.591 m</span></div>
+              <div class="spec-row"><span class="label">内部尺寸 (L×W×H):</span><span class="val">5.898 × 2.352 × 2.385 m</span></div>
+              <div class="spec-row"><span class="label">门框净尺寸 (W×H):</span><span class="val">2.340 × 2.280 m</span></div>
+              <div class="spec-row"><span class="label">标称理论容积:</span><span class="val">33.10 CBM</span></div>
+              <div class="spec-row"><span class="label">实际建议装载:</span><span class="val" style="color:var(--primary);">约 26 ~ 28 CBM</span></div>
+              <div class="spec-row"><span class="label">集装箱自重 (Tare):</span><span class="val">约 2.2 吨</span></div>
+              <div class="spec-row"><span class="label">最大允许总重 (Max Gross):</span><span class="val">约 30.48 吨</span></div>
+              <div class="spec-row"><span class="label">推荐装载货重:</span><span class="val">约 17.5 ~ 22 吨</span></div>
+            </div>
+          </div>
+
+          <!-- 40GP -->
+          <div class="spec-card">
+            <div class="spec-card-head">
+              <h4>40GP 标准平柜</h4>
+              <span>40' General Purpose</span>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row"><span class="label">外部尺寸 (L×W×H):</span><span class="val">12.192 × 2.438 × 2.591 m</span></div>
+              <div class="spec-row"><span class="label">内部尺寸 (L×W×H):</span><span class="val">12.032 × 2.352 × 2.385 m</span></div>
+              <div class="spec-row"><span class="label">门框净尺寸 (W×H):</span><span class="val">2.340 × 2.280 m</span></div>
+              <div class="spec-row"><span class="label">标称理论容积:</span><span class="val">67.50 CBM</span></div>
+              <div class="spec-row"><span class="label">实际建议装载:</span><span class="val" style="color:var(--primary);">约 54 ~ 58 CBM</span></div>
+              <div class="spec-row"><span class="label">集装箱自重 (Tare):</span><span class="val">约 3.7 吨</span></div>
+              <div class="spec-row"><span class="label">最大允许总重 (Max Gross):</span><span class="val">约 30.48 吨</span></div>
+              <div class="spec-row"><span class="label">推荐装载货重:</span><span class="val">约 22 ~ 26 吨</span></div>
+            </div>
+          </div>
+
+          <!-- 40HQ -->
+          <div class="spec-card">
+            <div class="spec-card-head">
+              <h4>40HQ 高柜</h4>
+              <span>40' High Cube</span>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row"><span class="label">外部尺寸 (L×W×H):</span><span class="val">12.192 × 2.438 × 2.896 m</span></div>
+              <div class="spec-row"><span class="label">内部尺寸 (L×W×H):</span><span class="val">12.032 × 2.352 × 2.690 m</span></div>
+              <div class="spec-row"><span class="label">门框净尺寸 (W×H):</span><span class="val">2.340 × 2.580 m</span></div>
+              <div class="spec-row"><span class="label">标称理论容积:</span><span class="val">76.13 CBM</span></div>
+              <div class="spec-row"><span class="label">实际建议装载:</span><span class="val" style="color:var(--primary);">约 66 ~ 68 CBM</span></div>
+              <div class="spec-row"><span class="label">集装箱自重 (Tare):</span><span class="val">约 4.0 吨</span></div>
+              <div class="spec-row"><span class="label">最大允许总重 (Max Gross):</span><span class="val">约 30.48 吨</span></div>
+              <div class="spec-row"><span class="label">推荐装载货重:</span><span class="val">约 22 ~ 26 吨</span></div>
+            </div>
+          </div>
+
+          <!-- 45HQ -->
+          <div class="spec-card">
+            <div class="spec-card-head">
+              <h4>45HQ 超高特长柜</h4>
+              <span>45' High Cube</span>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row"><span class="label">外部尺寸 (L×W×H):</span><span class="val">13.716 × 2.438 × 2.896 m</span></div>
+              <div class="spec-row"><span class="label">内部尺寸 (L×W×H):</span><span class="val">13.556 × 2.352 × 2.690 m</span></div>
+              <div class="spec-row"><span class="label">门框净尺寸 (W×H):</span><span class="val">2.340 × 2.580 m</span></div>
+              <div class="spec-row"><span class="label">标称理论容积:</span><span class="val">86.00 CBM</span></div>
+              <div class="spec-row"><span class="label">实际建议装载:</span><span class="val" style="color:var(--primary);">约 75 ~ 78 CBM</span></div>
+              <div class="spec-row"><span class="label">集装箱自重 (Tare):</span><span class="val">约 4.8 吨</span></div>
+              <div class="spec-row"><span class="label">最大允许总重 (Max Gross):</span><span class="val">约 30.48 吨</span></div>
+              <div class="spec-row"><span class="label">推荐装载货重:</span><span class="val">约 22 ~ 25 吨</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-backdrop" id="settingsBackdrop" hidden>
+    <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <header class="settings-head">
+        <h2 id="settingsTitle">工具设置 / Workspace Settings</h2>
+        <button type="button" class="settings-close" id="btnCloseSettings" aria-label="关闭">×</button>
+      </header>
+      <div class="settings-body">
+        <section class="settings-section">
+          <h3>品牌信息 Brand</h3>
+          <div class="settings-grid">
+            <label class="settings-field">显示名称 / Display name<input id="brandNameInput" maxlength="36" type="text" value="外贸装柜 & 装箱方数智能测算工具"></label>
+            <label class="settings-field">上传 Logo / Upload logo<input id="brandLogoFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+          </div>
+          <div class="settings-brand-preview"><img id="brandLogoPreview" alt="Logo preview"><span id="brandPreviewName">尚未上传 Logo</span></div>
+        </section>
+        <section class="settings-section">
+          <h3>柜体外观 Container Appearance</h3>
+          <div class="settings-grid">
+            <label class="settings-field">柜体钢板色 / Container steel<input type="color" id="containerColorInput" value="#526c7d"></label>
+            <label class="settings-field">柜门颜色 / Door color<input type="color" id="doorColorInput" value="#485a79"></label>
+            <label class="settings-field">柜体结构线 / Frame<input type="color" id="frameColorInput" value="#70889b"></label>
+            <label class="settings-field">牛皮纸箱色 / Cartons<input type="color" id="cartonColorInput" value="#bd946a"></label>
+            <label class="settings-field">Logo位置 / Logo position<select id="logoSideInput"><option value="near">近侧板 Near side</option><option value="far">远侧板 Far side</option><option value="door">柜门 Doors</option></select></label>
+          </div>
+          <label class="settings-field">Logo尺寸 / Logo size <input type="range" id="logoScaleInput" min="60" max="150" value="100"></label>
+          <label class="settings-check"><input type="checkbox" id="showLogoInput" checked>在柜体外观上显示 Logo / Show branding on container</label>
+          <p class="settings-note">勾选后，名称与 Logo 会显示在所选外表面（近侧板、远侧板或柜门）；剖切和完整箱体视图均可查看，修改后请保存品牌与外观。</p>
+          <div class="settings-actions"><button type="button" id="btnResetAppearance">恢复默认外观</button><button type="button" class="primary" id="btnSaveAppearance">保存品牌与外观</button></div>
+          <p class="settings-feedback" id="appearanceFeedback" role="status"></p>
+        </section>
+        <section class="settings-section">
+          <h3>固定模板 Saved Templates</h3>
+          <p>保存当前柜型、货物尺寸、数量、装载模式与摆放规则。模板仅保存在此浏览器中。</p>
+          <div class="settings-grid"><label class="settings-field">模板名称 / Template name<input id="templateNameInput" type="text" maxlength="36" placeholder="例如：40HQ-宠物喂食器"></label><div class="settings-field" style="align-content:end"><button type="button" class="btn-action primary" id="btnConfirmSaveTemplate">保存当前参数为固定模板</button></div></div>
+          <p class="settings-feedback" id="templateFeedback" role="status"></p>
+          <div class="template-list" id="customTemplateList"></div>
+        </section>
+        <section class="settings-section">
+          <h3>团队账号 Team Accounts</h3>
+          <p class="settings-note">本地单文件版不具备安全的服务器身份验证，不能真实创建子账号或核销邀请码。此入口保留为后续团队版接入点；请勿在此输入或保存密码。</p>
+          <div class="settings-actions"><button type="button" disabled title="接入后端服务后启用">登录与邀请码注册（需服务器端启用）</button></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <!-- Three.js + OrbitControls CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    "use strict";
+
+    /* =========================================================
+       1. CONTAINER & PALLET CONSTANTS & DICTIONARY
+       ========================================================= */
+    const CONTAINERS = {
+      "20GP": { outside:[6.058, 2.438, 2.591], inside:[5.898, 2.352, 2.385], door:[2.340, 2.280], tare:2.2, cbm:33.08, safeCbm:28.0, maxPayload:21.8, nameZh:"20GP 标准平柜", nameEn:"20GP Standard" },
+      "40GP": { outside:[12.192, 2.438, 2.591], inside:[12.032, 2.352, 2.385], door:[2.340, 2.280], tare:3.7, cbm:67.49, safeCbm:58.0, maxPayload:26.5, nameZh:"40GP 标准平柜", nameEn:"40GP Standard" },
+      "40HQ": { outside:[12.192, 2.438, 2.896], inside:[12.032, 2.352, 2.690], door:[2.340, 2.580], tare:4.0, cbm:76.13, safeCbm:68.0, maxPayload:26.5, nameZh:"40HQ 高柜", nameEn:"40HQ High Cube" },
+    };
+
+    const PRESETS = {
+      "demo1": {
+        container:"40HQ", mode:"floor",
+        boxL:48, boxW:38, boxH:32, boxGross:11.5, boxCount:680, cargoName:"智能宠物喂食器外箱",
+        orientation:"auto", accessoryItems:[{name:"配件小箱",length:25,width:20,height:15,quantity:0,gross:3.5}]
+      },
+      "demo2": {
+        container:"20GP", mode:"floor",
+        boxL:40, boxW:30, boxH:25, boxGross:8.0, boxCount:450, cargoName:"电子数码配件箱",
+        orientation:"auto", accessoryItems:[{name:"数码配件小箱",length:20,width:15,height:10,quantity:50,gross:2.0}]
+      },
+      "demo3": {
+        container:"40HQ", mode:"pallet",
+        palletL:120, palletW:80, palletH:15, palletTare:15, palletLayers:5, palletPerLayer:6,
+        boxL:40, boxW:40, boxH:45, boxGross:14.0, boxCount:600, cargoName:"欧美打托出口机械件",
+        orientation:"upright", accessoryItems:[]
+      },
+      "demo4": {
+        container:"40GP", mode:"floor",
+        boxL:60, boxW:40, boxH:40, boxGross:12.0, boxCount:550, cargoName:"外贸服装轻纺外箱",
+        orientation:"auto", accessoryItems:[]
+      }
+    };
+
+    let currentLang = "zh";
+    let currentMode = "floor";  // floor | pallet
+    let currentViewMode = "cutaway"; // cutaway | full | wireframe
+    const APPEARANCE_DEFAULTS = { containerColor:"#526c7d", doorColor:"#485a79", frameColor:"#80929f", cartonColor:"#bd946a", logoData:"", brandName:"", logoSide:"near", logoScale:100, showLogo:true };
+    function readStoredJSON(key, fallback) {
+      try { const value = localStorage.getItem(key); return value ? JSON.parse(value) : fallback; }
+      catch (error) { return fallback; }
+    }
+    function writeStoredJSON(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+      catch (error) { return false; }
+    }
+    const savedAppearance = readStoredJSON("containerPlannerAppearance", {}) || {};
+    let currentAppearance = { ...APPEARANCE_DEFAULTS, ...savedAppearance };
+    let pendingLogoData = currentAppearance.logoData;
+    for (const key of ["containerColor", "doorColor", "frameColor", "cartonColor"]) {
+      if (!/^#[\da-f]{6}$/i.test(currentAppearance[key] || "")) currentAppearance[key] = APPEARANCE_DEFAULTS[key];
+    }
+    if (typeof currentAppearance.logoData !== "string" || !currentAppearance.logoData.startsWith("data:image/")) currentAppearance.logoData = "";
+    currentAppearance.brandName = String(currentAppearance.brandName || "").slice(0, 36);
+    currentAppearance.logoSide = ["near", "far", "door"].includes(currentAppearance.logoSide) ? currentAppearance.logoSide : "near";
+    currentAppearance.logoScale = Math.max(60, Math.min(150, Number(currentAppearance.logoScale) || 100));
+    currentAppearance.showLogo = currentAppearance.showLogo !== false;
+    let customTemplates = readStoredJSON("containerPlannerTemplates", []);
+    if (!Array.isArray(customTemplates)) customTemplates = [];
+    customTemplates = customTemplates.filter(item => item && typeof item.id === "string" && typeof item.name === "string" && item.state && CONTAINERS[item.state.container]).slice(0, 40);
+    const bi = (zh, en) => currentLang === "en" ? en : zh;
+
+    const STATIC_EN = {
+      "外贸装柜 & 装箱方数智能测算工具":"Export Container Loading & CBM Planner",
+      "📦 示例1：宠物智能喂食器外箱 (标准40HQ)":"📦 Sample 1: Pet Feeder Cartons (40HQ)",
+      "📦 示例2：中号电子配件小箱 (散装20GP)":"📦 Sample 2: Electronics Cartons (20GP)",
+      "🪵 示例3：欧美标准打托货物 (40HQ 打托)":"🪵 Sample 3: Palletized Cargo (40HQ)",
+      "👕 示例4：轻纺服装纸箱 (40GP 散装)":"👕 Sample 4: Apparel Cartons (40GP)",
+      "打印/导出报告":"Print / Export Report","⚙ 设置 Settings":"⚙ Settings",
+      "＋ 保存模板":"＋ Save Template","🚢 集装箱装柜 3D 测算 (Container Load)":"🚢 3D Container Loading",
+      "📦 单箱/多箱方数与运费测算 (CBM Calculator)":"📦 Carton CBM & Freight Calculator",
+      "📋 标准集装箱规格对照表 (Container Specs)":"📋 Container Specifications",
+      "装柜计算参数":"Loading Parameters","选择柜型 (CONTAINER TYPE)":"Container Type","选择柜型 (Container Type)":"Container Type",
+      "20GP · 20尺标准平柜 (标称 33.1 CBM / 实用 ~28 CBM)":"20GP · Standard 20 ft (Nominal 33.1 CBM / Practical ~28 CBM)",
+      "40GP · 40尺标准平柜 (标称 67.5 CBM / 实用 ~58 CBM)":"40GP · Standard 40 ft (Nominal 67.5 CBM / Practical ~58 CBM)",
+      "40HQ · 40尺高柜 (标称 76.1 CBM / 实用 ~68 CBM)":"40HQ · 40 ft High Cube (Nominal 76.1 CBM / Practical ~68 CBM)",
+      "2":"2","装载模式 (LOADING MODE)":"Loading Mode","装载模式 (Loading Mode)":"Loading Mode","📦 散装直装 (Floor-loaded)":"📦 Floor-loaded",
+      "🪵 托盘打托 (Palletized)":"🪵 Palletized","主货外箱参数 (MAIN CARGO)":"Main Cargo Carton","主货外箱参数 (Main Cargo)":"Main Cargo Carton",
+      "品名描述":"Product name","外箱长 L (cm)":"Carton length L (cm)","外箱宽 W (cm)":"Carton width W (cm)",
+      "外箱高 H (cm)":"Carton height H (cm)","单箱毛重 Gross (kg)":"Gross weight / carton (kg)",
+      "装运箱数 (Cartons)":"Cartons requested","自动按本柜型最大装载量填入箱数":"Fill maximum capacity for this container",
+      "纸箱摆放朝向规则":"Carton orientation","🔄 智能最优：自动寻找装载量最多的朝向":"🔄 Auto: best carton orientation",
+      "⬆️ 严格不可倒置：保持高度方向朝上 (仅长宽可调)":"⬆️ Upright only (rotate base)",
+      "➡️ 长度沿柜长方向平放 (L-Parallel)":"➡️ Length along container",
+      "⬅️ 宽度沿柜长方向平放 (W-Parallel)":"⬅️ Width along container",
+      "配件箱 / 辅货混装 (可选)":"Accessory cartons (optional)","配件长 L (cm)":"Accessory length L (cm)",
+      "配件宽 W (cm)":"Accessory width W (cm)","配件高 H (cm)":"Accessory height H (cm)",
+      "配件箱数 (Quantity)":"Accessory quantity","配件单箱毛重 (kg)":"Accessory gross / carton (kg)",
+      "生成 3D 装柜排布":"Generate 3D Loading","清空重置":"Clear / Reset",
+      "3D 仿真装柜视图":"3D Loading Preview","剖切透视":"Cutaway","完整箱体":"Full Container",
+      "线框轮廓":"Wireframe","🎯 重置视角":"🎯 Reset View","柜内净尺寸:":"Inside dimensions:",
+      "门口净尺寸:":"Door opening:","柜体自重:":"Container tare:","柜体钢板 / Container":"Container steel",
+      "多色纸箱 / Cartons":"Kraft cartons","配件箱":"Accessory cartons","标准木托盘":"Wood pallet",
+      "🖱️ 左键旋转视角 · 滚轮缩放 · 右键平移":"🖱️ Drag to rotate · Scroll to zoom · Right-drag to pan",
+      "重播":"Replay","暂停":"Pause","继续":"Resume","速度:":"Speed:","⚡直接装满":"⚡ Finish loading",
+      "实际货物总体积 (TOTAL CBM)":"Cargo volume (TOTAL CBM)","主货单箱:":"Main carton:",
+      "已装箱数 / 需求箱数":"Loaded / requested cartons","排布:":"Layout:","货物总毛重 (GROSS WEIGHT)":"Gross weight",
+      "柜内剩余容积 (REMAINING)":"Remaining container volume","标称内容积:":"Nominal capacity:",
+      "📊 空间容积利用率 (Space Utilization)":"📊 Space Utilization","集装箱标称体积:":"Nominal container volume:",
+      "建议安全装载量 (~88%):":"Suggested load (~88%):","已用体积 (含托盘):":"Occupied volume (incl. pallets):",
+      "货型分析 (重/泡货):":"Cargo density:","工具设置 / Workspace Settings":"Workspace Settings",
+      "品牌信息 Brand":"Brand Identity","柜体外观 Container Appearance":"Container Appearance",
+      "固定模板 Saved Templates":"Saved Templates","团队账号 Team Accounts":"Team Accounts",
+      "恢复默认外观":"Reset Appearance","保存品牌与外观":"Save Branding & Appearance",
+      "保存当前参数为固定模板":"Save Current Setup as Template",
+      "托盘规格预设":"Pallet preset","欧标木托盘 (EUR 120 × 80 × 15 cm)":"EUR pallet (120 × 80 × 15 cm)",
+      "美标木托盘 (US 120 × 100 × 15 cm)":"US pallet (120 × 100 × 15 cm)","日韩标准托盘 (110 × 110 × 14 cm)":"Japan/Korea pallet (110 × 110 × 14 cm)",
+      "自定义托盘尺寸...":"Custom pallet dimensions...","托盘长 L (cm)":"Pallet length L (cm)","托盘宽 W (cm)":"Pallet width W (cm)",
+      "托盘高 H (cm)":"Pallet height H (cm)","单托自重 (kg)":"Pallet tare (kg)","堆码层数 (Layers)":"Stacking layers",
+      "每层箱数 (Boxes/Layer)":"Cartons per layer","品名描述":"Product name","外箱长 L (cm)":"Carton length L (cm)",
+      "外箱宽 W (cm)":"Carton width W (cm)","外箱高 H (cm)":"Carton height H (cm)","单箱毛重 Gross (kg)":"Gross weight / carton (kg)",
+      "配件箱 / 辅货混装 (可选)":"Accessory cartons / mixed cargo (optional)","配件长 L (cm)":"Accessory length L (cm)",
+      "配件宽 W (cm)":"Accessory width W (cm)","配件高 H (cm)":"Accessory height H (cm)","配件箱数 (Quantity)":"Accessory quantity",
+      "配件单箱毛重 (kg)":"Accessory gross / carton (kg)",
+      "添加一种货物":"Add cargo type","每种不同外箱单独添加；系统按顺序分区排布，并分别核算已装与未装数量。":"Add each different carton type separately. The planner assigns sequential loading zones and reports loaded and remaining quantities for each type.",
+      "勾选后，名称与 Logo 会显示在所选外表面（近侧板、远侧板或柜门）；剖切和完整箱体视图均可查看，修改后请保存品牌与外观。":"When enabled, the name and logo appear on the selected exterior surface (near side, far side, or doors) and remain visible in cutaway and full views. Save to apply changes.",
+      "货物名称":"Cargo name","箱长 L (cm)":"Carton length L (cm)","箱宽 W (cm)":"Carton width W (cm)","箱高 H (cm)":"Carton height H (cm)",
+      "箱数":"Quantity","货物类型":"Cargo type","柜门颜色 / Door color":"Container door color",
+      "显示名称 / Display name":"Display name","上传 Logo / Upload logo":"Upload logo",
+      "尚未上传 Logo":"No logo uploaded","柜体钢板色 / Container steel":"Container steel",
+      "柜门颜色 / Door color":"Container door color",
+      "柜体结构线 / Frame":"Container frame","牛皮纸箱色 / Cartons":"Kraft carton color",
+      "Logo位置 / Logo position":"Logo position","Logo尺寸 / Logo size":"Logo size",
+      "在柜体外观上显示 Logo / Show branding on container":"Show branding on container",
+      "勾选后，名称与 Logo 会显示在所选外表面（近侧板、远侧板或柜门）；剖切和完整箱体视图均可查看，修改后请保存品牌与外观。":"When enabled, the name and logo appear on the selected exterior surface (near side, far side, or doors) and remain visible in cutaway and full views. Save to apply changes.",
+      "模板名称 / Template name":"Template name",
+      "近侧板 Near side":"Near side","远侧板 Far side":"Far side","柜门 Doors":"Container doors",
+      "保存当前柜型、货物尺寸、数量、装载模式与摆放规则。模板仅保存在此浏览器中。":"Save container, cargo dimensions, quantity, loading mode and orientation. Templates stay in this browser.",
+      "本地单文件版不具备安全的服务器身份验证，不能真实创建子账号或核销邀请码。此入口保留为后续团队版接入点；请勿在此输入或保存密码。":"This local single-file version has no secure server authentication and cannot create subaccounts or verify invitations. This is a reserved integration point; do not enter or store passwords here.",
+      "登录与邀请码注册（需服务器端启用）":"Login and invitation registration (server required)",
+      "柜内净尺寸:":"Inside dimensions:","门尺寸:":"Door opening:","标称容积:":"Nominal volume:","最大载重:":"Max payload:",
+      "门口净尺寸:":"Door opening:","宽 ":"W ","高 ":"H ","约 ":"Approx. "," 吨 (Tare)":" T (Tare)",
+      "外尺寸与货物参数":"Container and cargo parameters","尺寸单位：cm / kg":"Units: cm / kg",
+      "工具设置 / Workspace Settings":"Workspace Settings","固定模板已保存":"Template saved",
+      "模板名称不能为空":"Enter a template name","模板已应用":"Template applied",
+      "已保存到本机浏览器":"Saved in this browser","删除":"Delete","尚无自定义模板":"No saved templates yet",
+      "📐 单品装外箱 & 外箱方数测算":"📐 Inner Packaging & Outer Carton CBM",
+      "根据单件商品内包装尺寸与装箱数，快速推算外箱长宽高、单箱体积 (CBM) 及总体积。":"Estimate carton dimensions and CBM from individual product dimensions and pack quantity.",
+      "✈️ 国际快递 / 空运 / 海运计费重对照":"✈️ Courier / Air / LCL Chargeable Weight",
+      "测算国际货代结算时的计费重量 (Chargeable Weight) 及拼箱计费吨 (Revenue Ton)。":"Compare chargeable weight for courier, air freight and LCL shipments.",
+      "运输方式":"Transport mode","体积重换算系数":"Volumetric factor","体积重量 (kg)":"Volumetric weight (kg)",
+      "实际毛重 (kg)":"Actual gross weight (kg)","最终计费标准":"Billable basis","国际商业快递 (DHL/FedEx)":"International courier (DHL/FedEx)",
+      "国际空运专线 (Air Freight)":"Air freight","海运散货拼箱 (LCL)":"Less-than-container load (LCL)",
+      "📋 常见海运标准集装箱 (Standard Shipping Containers) 规格参数与装载参考":"📋 Standard Shipping Container Dimensions & Loading Reference",
+      "20GP 标准小柜":"20GP Standard","40GP 标准平柜":"40GP Standard","40HQ 高柜":"40HQ High Cube","45HQ 超高特长柜":"45HQ High Cube",
+      "外部尺寸 (L×W×H):":"External dimensions (L×W×H):","内部尺寸 (L×W×H):":"Internal dimensions (L×W×H):",
+      "门框净尺寸 (W×H):":"Door opening (W×H):","标称理论容积:":"Nominal volume:","实际建议装载:":"Suggested usable volume:",
+      "集装箱自重 (Tare):":"Container tare:","最大允许总重 (Max Gross):":"Maximum gross weight:","推荐装载货重:":"Suggested cargo payload:",
+      "实际货物总体积 (Total CBM)":"Cargo volume (TOTAL CBM)","货物总毛重 (Gross Weight)":"Gross weight (TOTAL)",
+      "柜内剩余容积 (Remaining)":"Remaining container volume","空间容积利用率 (Space Utilization)":"Space Utilization",
+      "箱":"cartons"
+    };
+
+    function setLanguage(lang, refresh = true) {
+      currentLang = lang === "en" ? "en" : "zh";
+      document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+      $("langZh").classList.toggle("active", currentLang === "zh");
+      $("langEn").classList.toggle("active", currentLang === "en");
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest("script,style")) continue;
+        if (node.__zhSource === undefined) node.__zhSource = node.nodeValue;
+        const source = node.__zhSource;
+        const trimmed = source.trim();
+        const translated = STATIC_EN[trimmed];
+        if (currentLang === "en" && translated) {
+          const lead = source.match(/^\\s*/)?.[0] || "";
+          const tail = source.match(/\\s*$/)?.[0] || "";
+          node.nodeValue = lead + translated + tail;
+        } else if (currentLang === "zh") node.nodeValue = source;
+      }
+      if ($("accessoryCargoList")) renderAccessoryCargoInputs(getAccessoryCargoInputs());
+      document.title = bi("外贸装柜 & 装箱方数智能测算工具 · 3D Container & CBM Calculator", "Export Container Loading & CBM Planner · 3D Simulation");
+      $("cargoName").placeholder = bi("例如：宠物用品", "e.g. pet supplies");
+      $("templateNameInput").placeholder = bi("例如：40HQ-宠物喂食器", "e.g. 40HQ-Pet Feeder");
+      applyBrandAppearance(false);
+      if (refresh && activeContainerCalcMeta) {
+        const oldCount = currentLoadedBoxCount;
+        const wasRunning = !!animTimer && !isAnimPaused;
+        const wasPaused = !!animTimer && isAnimPaused;
+        updateContainerBrief();
+        runContainerCalculation(false);
+        if (wasRunning || wasPaused) {
+          applyLoadedState(Math.min(oldCount, allCargoSequence.length), true);
+          if (wasRunning) startLoadingAnimation(false);
+          else isAnimPaused = true;
+        }
+        calculateCartonPackaging();
+      }
+      renderCustomTemplateOptions();
+      if (!$ ("settingsBackdrop").hidden) renderCustomTemplateList();
+    }
+
+    const $ = id => document.getElementById(id);
+
+    const accessoryBoxColors = ["#8296a3", "#a78e78", "#7f9a8d", "#8f83a0", "#a89c70", "#73939b"];
+    let accessoryRowSequence = 0;
+
+    function makeAccessoryField(labelZh, labelEn, fieldName, value, rowId, inputType = "number") {
+      const wrapper = document.createElement("div");
+      wrapper.className = "field";
+      if (fieldName === "name") wrapper.style.gridColumn = "1 / -1";
+      const inputId = "accessory-" + rowId + "-" + fieldName;
+      const label = document.createElement("label");
+      label.htmlFor = inputId;
+      const caption = document.createElement("span");
+      caption.textContent = bi(labelZh, labelEn);
+      label.appendChild(caption);
+      const input = document.createElement("input");
+      input.id = inputId;
+      input.type = inputType;
+      input.dataset.field = fieldName;
+      if (inputType === "number") {
+        input.min = "0";
+        input.step = fieldName === "quantity" ? "1" : "0.1";
+      } else input.maxLength = 40;
+      input.value = value == null ? "" : String(value);
+      if (fieldName === "name") input.placeholder = bi("例如：配件小箱", "e.g. accessory carton");
+      wrapper.append(label, input);
+      return wrapper;
+    }
+
+    function renderAccessoryCargoInputs(items) {
+      const host = $("accessoryCargoList");
+      if (!host) return;
+      host.replaceChildren();
+      const rows = Array.isArray(items) ? items : [];
+      rows.forEach((item, index) => {
+        const rowId = "cargo-" + (++accessoryRowSequence);
+        const row = document.createElement("div");
+        row.className = "accessory-cargo-item";
+        row.dataset.rowId = rowId;
+        const head = document.createElement("div");
+        head.className = "accessory-cargo-head";
+        const title = document.createElement("div");
+        title.className = "accessory-cargo-title";
+        const swatch = document.createElement("span");
+        swatch.className = "accessory-cargo-swatch";
+        swatch.style.background = accessoryBoxColors[index % accessoryBoxColors.length];
+        swatch.style.color = accessoryBoxColors[index % accessoryBoxColors.length];
+        const titleText = document.createElement("span");
+        titleText.textContent = bi("货物类型", "Cargo type") + " " + (index + 1);
+        title.append(swatch, titleText);
+        const controls = document.createElement("div");
+        controls.className = "accessory-cargo-controls";
+        const up = document.createElement("button");
+        up.type = "button"; up.className = "accessory-cargo-move"; up.dataset.moveCargo = "up";
+        up.textContent = bi("上移", "Up"); up.setAttribute("aria-label", bi("上移货物类型", "Move cargo type up"));
+        up.disabled = index === 0;
+        const down = document.createElement("button");
+        down.type = "button"; down.className = "accessory-cargo-move"; down.dataset.moveCargo = "down";
+        down.textContent = bi("下移", "Down"); down.setAttribute("aria-label", bi("下移货物类型", "Move cargo type down"));
+        down.disabled = index === rows.length - 1;
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.className = "accessory-cargo-remove"; remove.dataset.removeCargo = "true";
+        remove.textContent = bi("删除", "Delete");
+        controls.append(up, down, remove);
+        head.append(title, controls);
+        const grid = document.createElement("div");
+        grid.className = "accessory-cargo-grid";
+        grid.append(
+          makeAccessoryField("货物名称", "Cargo name", "name", item.name || "", rowId, "text"),
+          makeAccessoryField("箱长 L (cm)", "Carton length L (cm)", "length", item.length ?? "", rowId),
+          makeAccessoryField("箱宽 W (cm)", "Carton width W (cm)", "width", item.width ?? "", rowId),
+          makeAccessoryField("箱高 H (cm)", "Carton height H (cm)", "height", item.height ?? "", rowId),
+          makeAccessoryField("箱数", "Quantity", "quantity", item.quantity ?? 0, rowId),
+          makeAccessoryField("单箱毛重 Gross (kg)", "Gross weight / carton (kg)", "gross", item.gross ?? 0, rowId)
+        );
+        row.append(head, grid);
+        host.appendChild(row);
+      });
+    }
+
+    function getAccessoryCargoInputs() {
+      return Array.from(document.querySelectorAll("#accessoryCargoList .accessory-cargo-item"), row => {
+        const read = field => row.querySelector('[data-field="' + field + '"]')?.value ?? "";
+        return {name:read("name"), length:read("length"), width:read("width"), height:read("height"), quantity:read("quantity"), gross:read("gross")};
+      });
+    }
+
+    function getCurrentFormState() {
+      const read = id => $(id).value;
+      return {
+        container: read("containerType"), mode: currentMode,
+        palletL: read("palletL"), palletW: read("palletW"), palletH: read("palletH"),
+        palletTare: read("palletTare"), palletLayers: read("palletLayers"), palletPerLayer: read("palletPerLayer"),
+        boxL: read("boxL"), boxW: read("boxW"), boxH: read("boxH"), boxGross: read("boxGross"), boxCount: read("boxCount"),
+        cargoName: read("cargoName"), orientation: read("boxOrientationRule"),
+        accessoryItems: getAccessoryCargoInputs()
+      };
+    }
+
+    function applyFormState(state) {
+      if (!state || !CONTAINERS[state.container]) return;
+      $("containerType").value = state.container;
+      currentMode = state.mode === "pallet" ? "pallet" : "floor";
+      $("btnModeFloor").classList.toggle("selected", currentMode === "floor");
+      $("btnModePallet").classList.toggle("selected", currentMode === "pallet");
+      $("palletConfigBox").style.display = currentMode === "pallet" ? "block" : "none";
+      for (const id of ["palletL", "palletW", "palletH", "palletTare", "palletLayers", "palletPerLayer", "boxL", "boxW", "boxH", "boxGross", "boxCount", "cargoName"]) {
+        if (state[id] !== undefined) $(id).value = state[id];
+      }
+      const accessoryItems = Array.isArray(state.accessoryItems) ? state.accessoryItems : (state.accCount !== undefined ? [{name:bi("配件箱", "Accessory carton"), length:state.accL ?? "", width:state.accW ?? "", height:state.accH ?? "", quantity:state.accCount ?? 0, gross:state.accGross ?? 0}] : []);
+      renderAccessoryCargoInputs(accessoryItems);
+      if (state.orientation) $("boxOrientationRule").value = state.orientation;
+      $("palletPresetSelect").value = "custom";
+      updateContainerBrief();
+      runContainerCalculation(false);
+    }
+
+    function renderCustomTemplateOptions() {
+      document.querySelectorAll("#presetSelector [data-user-template]").forEach(node => node.remove());
+      let group = $("presetSelector").querySelector("optgroup[data-user-templates]");
+      if (group) group.remove();
+      if (!customTemplates.length) return;
+      group = document.createElement("optgroup");
+      group.dataset.userTemplates = "true";
+      group.label = bi("我的固定模板 / 本机保存", "My saved templates / Local");
+      customTemplates.forEach(template => {
+        const option = document.createElement("option");
+        option.value = `custom:${template.id}`;
+        option.textContent = `📌 ${template.name}`;
+        option.dataset.userTemplate = "true";
+        group.appendChild(option);
+      });
+      $("presetSelector").appendChild(group);
+    }
+
+    function renderCustomTemplateList() {
+      const list = $("customTemplateList");
+      list.replaceChildren();
+      if (!customTemplates.length) {
+        const empty = document.createElement("p");
+        empty.textContent = bi("尚无自定义模板", "No saved templates yet");
+        list.appendChild(empty);
+        return;
+      }
+      customTemplates.forEach(template => {
+        const row = document.createElement("div");
+        row.className = "template-entry";
+        const name = document.createElement("span");
+        name.textContent = `${template.name} · ${template.state.container} · ${template.state.boxCount} ${bi("箱", "cartons")}`;
+        const actions = document.createElement("div");
+        actions.className = "template-actions";
+        const apply = document.createElement("button");
+        apply.type = "button"; apply.className = "template-apply"; apply.dataset.id = template.id;
+        apply.textContent = bi("应用", "Apply");
+        const remove = document.createElement("button");
+        remove.type = "button"; remove.className = "template-remove"; remove.dataset.id = template.id;
+        remove.textContent = bi("删除", "Delete");
+        actions.append(apply, remove);
+        row.append(name, actions);
+        list.appendChild(row);
+      });
+    }
+
+    function saveCurrentTemplate() {
+      const name = $("templateNameInput").value.trim().slice(0, 36);
+      if (!name) {
+        $("templateFeedback").textContent = bi("请先填写模板名称。", "Enter a template name first.");
+        $("templateNameInput").focus();
+        return;
+      }
+      const template = {
+        id: (crypto.randomUUID ? crypto.randomUUID() : `t${Date.now()}${Math.random().toString(16).slice(2)}`),
+        name,
+        state: getCurrentFormState()
+      };
+      customTemplates = [template, ...customTemplates.filter(item => item.name !== name)].slice(0, 40);
+      if (!writeStoredJSON("containerPlannerTemplates", customTemplates)) {
+        $("templateFeedback").textContent = bi("保存失败：浏览器本地存储空间不足。", "Could not save: browser storage is full.");
+        return;
+      }
+      $("templateNameInput").value = "";
+      $("templateFeedback").textContent = bi("已保存到本机浏览器，可从顶部模板菜单调用。", "Saved in this browser. Load it from the top template menu.");
+      renderCustomTemplateList();
+      renderCustomTemplateOptions();
+    }
+
+    function syncAppearanceControls() {
+      pendingLogoData = currentAppearance.logoData;
+      $("brandNameInput").value = currentAppearance.brandName;
+      $("containerColorInput").value = currentAppearance.containerColor;
+      $("doorColorInput").value = currentAppearance.doorColor;
+      $("frameColorInput").value = currentAppearance.frameColor;
+      $("cartonColorInput").value = currentAppearance.cartonColor;
+      $("logoSideInput").value = currentAppearance.logoSide;
+      $("logoScaleInput").value = currentAppearance.logoScale;
+      $("showLogoInput").checked = currentAppearance.showLogo !== false;
+      const preview = $("brandLogoPreview");
+      preview.src = currentAppearance.logoData || "";
+      preview.hidden = !currentAppearance.logoData;
+      $("brandPreviewName").textContent = currentAppearance.logoData
+        ? bi("Logo 已载入", "Logo loaded")
+        : bi("尚未上传 Logo", "No logo uploaded");
+    }
+
+    function applyBrandAppearance(redraw = true) {
+      if (!$ ("brandLogoMark")) return;
+      const logo = $("brandLogoMark");
+      const title = document.querySelector(".brand-title");
+      if (currentAppearance.logoData) {
+        logo.style.backgroundImage = `url("${currentAppearance.logoData}")`;
+        logo.classList.add("has-image");
+        logo.textContent = "";
+      } else {
+        logo.style.backgroundImage = "";
+        logo.classList.remove("has-image");
+        logo.textContent = "3D";
+      }
+      title.textContent = currentAppearance.brandName || bi("外贸装柜 & 装箱方数智能测算工具", "Export Container Loading & CBM Planner");
+      if ($("legendContainerColor")) $("legendContainerColor").style.background = currentAppearance.containerColor;
+      if ($("legendCartonColor")) $("legendCartonColor").style.background = currentAppearance.cartonColor;
+      if ($("brandNameInput")) $("brandNameInput").value = currentAppearance.brandName;
+      if ($("brandLogoPreview")) {
+        $("brandLogoPreview").src = currentAppearance.logoData || "";
+        $("brandLogoPreview").hidden = !currentAppearance.logoData;
+        $("brandPreviewName").textContent = currentAppearance.logoData ? bi("Logo 已载入", "Logo loaded") : bi("尚未上传 Logo", "No logo uploaded");
+      }
+      if (redraw && activeContainerCalcMeta) runContainerCalculation(false);
+    }
+
+    function readAndResizeLogo(file) {
+      if (!file || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) return Promise.reject(new Error(bi("请使用 PNG、JPG 或 WebP 图片。", "Use a PNG, JPG, or WebP image.")));
+      if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error(bi("Logo 图片需小于 8 MB。", "Logo image must be under 8 MB.")));
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error(bi("无法读取这张图片。", "Could not read this image.")));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error(bi("图片格式无法解码。", "Could not decode this image.")));
+          img.onload = () => {
+            const ratio = Math.min(640 / img.width, 240 / img.height, 1);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(img.width * ratio));
+            canvas.height = Math.max(1, Math.round(img.height * ratio));
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/png"));
+          };
+          img.src = String(reader.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function saveAppearance() {
+      currentAppearance = {
+        ...currentAppearance,
+        logoData: pendingLogoData,
+        brandName: $("brandNameInput").value.trim().slice(0, 36),
+        containerColor: $("containerColorInput").value,
+        doorColor: $("doorColorInput").value,
+        frameColor: $("frameColorInput").value,
+        cartonColor: $("cartonColorInput").value,
+        logoSide: $("logoSideInput").value,
+        logoScale: Math.max(60, Math.min(150, Number($("logoScaleInput").value) || 100)),
+        showLogo: $("showLogoInput").checked
+      };
+      if (!writeStoredJSON("containerPlannerAppearance", currentAppearance)) {
+        $("appearanceFeedback").textContent = bi("保存失败：本地存储空间不足。请换小一点的 Logo。", "Could not save: browser storage is full. Try a smaller logo.");
+        return;
+      }
+      $("appearanceFeedback").textContent = bi("品牌与柜体外观已保存到本机。", "Branding and container appearance saved locally.");
+      applyBrandAppearance(true);
+    }
+
+    function openSettings() {
+      syncAppearanceControls();
+      renderCustomTemplateList();
+      $("settingsBackdrop").hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeSettings() {
+      $("settingsBackdrop").hidden = true;
+      document.body.style.overflow = "";
+    }
+
+    /* =========================================================
+       2. THREE.JS 3D VIEWPORT ENGINE
+       ========================================================= */
+    let scene, camera, renderer, controls, loadGroup, boxTexture;
+
+    function createKraftTexture() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+      // 使用纯净纸板底纹，移除中缝、条码和重复线条，避免看起来像虚线/划痕。
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,256,256);
+      let seed = 19;
+      for (let i=0; i<180; i++) {
+        seed = (seed * 9301 + 49297) % 233280;
+        const x = (seed / 233280) * 256;
+        seed = (seed * 9301 + 49297) % 233280;
+        const y = (seed / 233280) * 256;
+        ctx.fillStyle = i % 2 ? "rgba(80,54,31,.018)" : "rgba(255,255,255,.025)";
+        ctx.fillRect(x, y, 1, 1);
+      }
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    function init3DScene() {
+      const container = $("canvasContainer");
+      if (!container || !window.THREE || !THREE.OrbitControls) {
+        $("threeFallback").hidden = false;
+        $("threeFallback").textContent = bi("3D 渲染组件未能加载；计算、模板与设置仍可使用。请检查网络后刷新。", "3D renderer did not load. Calculations, templates and settings remain available; check the network and refresh.");
+        return;
+      }
+
+      try {
+      const width = Math.max(1, container.clientWidth);
+      const height = Math.max(1, container.clientHeight);
+
+      scene = new THREE.Scene();
+      scene.background = null;
+
+      camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 150);
+      
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // 关闭实时阴影，避免柜体/货物在地面产生大块黑影与渲染伪影。
+      renderer.shadowMap.enabled = false;
+
+      $("threeScene").appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.maxPolarAngle = Math.PI * 0.49;
+      controls.minDistance = 3;
+      controls.maxDistance = 45;
+
+      // Lighting
+      const hemiLight = new THREE.HemisphereLight(0xd9fbff, 0x10142b, 0.92);
+      scene.add(hemiLight);
+
+      const dirLight = new THREE.DirectionalLight(0xb9f8ff, 1.35);
+      dirLight.position.set(10, 18, 12);
+      dirLight.castShadow = false;
+      scene.add(dirLight);
+
+      const fillLight = new THREE.DirectionalLight(0xff59d6, 0.48);
+      fillLight.position.set(-10, 8, -10);
+      scene.add(fillLight);
+
+      // Floor Shadow Plane
+      const groundGeo = new THREE.PlaneGeometry(160, 160);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0x0c1525, roughness: 0.9, metalness: 0.12 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.01;
+      ground.receiveShadow = false;
+      scene.add(ground);
+
+      loadGroup = new THREE.Group();
+      scene.add(loadGroup);
+
+      boxTexture = createKraftTexture();
+
+      window.addEventListener("resize", onWindowResize);
+      animate();
+      $("threeFallback").hidden = true;
+      } catch (error) {
+        if (renderer) { renderer.dispose(); renderer.domElement.remove(); }
+        renderer = null; scene = null; camera = null; controls = null; loadGroup = null;
+        $("threeFallback").hidden = false;
+        $("threeFallback").textContent = bi("当前浏览器无法启动 3D 渲染；计算、模板与设置仍可使用。", "3D rendering is unavailable in this browser; calculations, templates and settings remain usable.");
+      }
+    }
+
+    function onWindowResize() {
+      const container = $("canvasContainer");
+      if (!renderer || !camera || !container) return;
+      const w = container.clientWidth, h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (controls) controls.update();
+      if (renderer && scene && camera) renderer.render(scene, camera);
+      updateCargoEntryMotion(performance.now());
+    }
+
+    function resetCameraPosition(cL, cW, cH) {
+      if (!camera || !controls) return;
+      controls.target.set(cL * 0.5, cH * 0.42, 0);
+      camera.position.set(cL * 1.15, cH * 1.35, cW * 2.1);
+      camera.updateProjectionMatrix();
+    }
+
+    /* =========================================================
+       3. 3D CONTAINER & CARGO RENDERING
+       ========================================================= */
+    function clearLoadGroup() {
+      if (!loadGroup) return;
+      while(loadGroup.children.length > 0) {
+        const obj = loadGroup.children[0];
+        loadGroup.remove(obj);
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          else obj.material.dispose();
+        }
+      }
+    }
+
+    function drawContainerFrame(c) {
+      const [l, w, h] = c.inside;
+      const [extL, extW, extH] = c.outside;
+
+      // Container floor plate
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x14263a, roughness: 0.78, metalness: 0.22, side: THREE.DoubleSide });
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(l, 0.03, w), floorMat);
+      floor.position.set(l / 2, 0.015, 0);
+      floor.receiveShadow = true;
+      loadGroup.add(floor);
+
+      // Metal Walls & Roof depending on View Mode
+      const isFull = currentViewMode === "full";
+      const isWire = currentViewMode === "wireframe";
+      const wallOpacity = isWire ? 0.0 : (isFull ? 0.48 : 0.24);
+
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: currentAppearance.containerColor,
+        roughness: 0.72,
+        metalness: 0.28,
+        emissive: 0x000000,
+        emissiveIntensity: 0,
+        transparent: true,
+        opacity: wallOpacity,
+        side: THREE.DoubleSide
+      });
+
+      // Front end wall (X = 0)
+      const frontWall = new THREE.Mesh(new THREE.BoxGeometry(0.03, h, w), wallMat);
+      frontWall.position.set(0.015, h / 2, 0);
+      loadGroup.add(frontWall);
+
+      // Far side wall (Z = -w/2)
+      const sideWall = new THREE.Mesh(new THREE.BoxGeometry(l, h, 0.03), wallMat);
+      sideWall.position.set(l / 2, h / 2, -w / 2);
+      loadGroup.add(sideWall);
+
+      if (isFull) {
+        // Near wall (Z = w/2)
+        const nearWall = new THREE.Mesh(new THREE.BoxGeometry(l, h, 0.03), wallMat);
+        nearWall.position.set(l / 2, h / 2, w / 2);
+        loadGroup.add(nearWall);
+
+        // Roof
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(l, 0.03, w), wallMat);
+        roof.position.set(l / 2, h, 0);
+        loadGroup.add(roof);
+
+        // Door Frame
+        const doorMat = new THREE.MeshStandardMaterial({ color: currentAppearance.doorColor, roughness: 0.66, metalness: 0.25, emissive: 0x000000, emissiveIntensity: 0, transparent: true, opacity: 0.58 });
+        const doorL = new THREE.Mesh(new THREE.BoxGeometry(0.04, c.door[1], c.door[0]/2 - 0.02), doorMat);
+        doorL.position.set(l + 0.02, c.door[1]/2, -c.door[0]/4);
+        loadGroup.add(doorL);
+        const doorR = new THREE.Mesh(new THREE.BoxGeometry(0.04, c.door[1], c.door[0]/2 - 0.02), doorMat);
+        doorR.position.set(l + 0.02, c.door[1]/2, c.door[0]/4);
+        loadGroup.add(doorR);
+      }
+
+      // Container Structural Corner Posts & Edge Frames
+      const edgeMat = new THREE.LineBasicMaterial({ color: currentAppearance.frameColor, linewidth: 1, transparent: true, opacity: 0.5 });
+      const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(l, h, w));
+      const lineFrame = new THREE.LineSegments(edges, edgeMat);
+      lineFrame.position.set(l / 2, h / 2, 0);
+      loadGroup.add(lineFrame);
+      // 标识贴在柜体外表面；剖切视图仍保留可见标识牌，线框模式则隐藏贴图。
+      if (!isWire) addContainerBrandDecal(l, w, h, c.door[1]);
+    }
+
+    function addContainerBrandDecal(l, w, h, doorH) {
+      if (!currentAppearance.showLogo || (!currentAppearance.logoData && !currentAppearance.brandName) || !window.THREE || !loadGroup) return;
+      const targetGroup = loadGroup;
+      const canvas = document.createElement("canvas");
+      canvas.width = 640; canvas.height = 192;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "rgba(245,248,250,.94)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const drawNameAndAdd = (img) => {
+        if (img) {
+          const ratio = Math.min(150 / img.width, 150 / img.height, 1);
+          const iw = img.width * ratio, ih = img.height * ratio;
+          ctx.drawImage(img, 20, (192 - ih) / 2, iw, ih);
+        }
+        if (currentAppearance.brandName) {
+          ctx.fillStyle = "#243443";
+          ctx.font = "bold 34px Arial, sans-serif";
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(currentAppearance.brandName.slice(0, 28), img ? 190 : 24, 96, 420);
+        }
+        if (targetGroup !== loadGroup) return;
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.MeshBasicMaterial({ map:texture, transparent:true, side:THREE.DoubleSide, depthWrite:false });
+        const scale = Math.max(0.6, Math.min(1.5, (Number(currentAppearance.logoScale) || 100) / 100));
+        const width = 1.7 * scale, height = 0.52 * scale;
+        const panelColor = currentAppearance.logoSide === "door" ? currentAppearance.doorColor : currentAppearance.containerColor;
+        const panelMaterial = new THREE.MeshStandardMaterial({color:panelColor, roughness:0.74, metalness:0.22, side:THREE.DoubleSide});
+        const panel = new THREE.Mesh(new THREE.BoxGeometry(width + 0.14, height + 0.12, 0.025), panelMaterial);
+        const mark = new THREE.Mesh(new THREE.PlaneGeometry(width, height), material);
+        mark.position.y = Math.min(h * 0.72, Math.max(0.5, doorH * 0.72));
+        if (currentAppearance.logoSide === "door") {
+          panel.position.set(l + 0.035, mark.position.y, 0);
+          panel.rotation.y = Math.PI / 2;
+          mark.position.set(l + 0.055, mark.position.y, 0);
+          mark.rotation.y = Math.PI / 2;
+        } else {
+          mark.position.x = l * 0.52;
+          panel.position.set(l * 0.52, mark.position.y, 0);
+          if (currentAppearance.logoSide === "far") {
+            panel.position.z = -w / 2 - 0.02;
+            panel.rotation.y = Math.PI;
+            mark.position.z = -w / 2 - 0.02;
+            mark.rotation.y = Math.PI;
+          } else {
+            panel.position.z = w / 2 + 0.02;
+            mark.position.z = w / 2 + 0.02;
+          }
+        }
+        targetGroup.add(panel);
+        if (currentAppearance.logoSide === "door") mark.position.x = l + 0.055;
+        else mark.position.z += currentAppearance.logoSide === "far" ? -0.021 : 0.021;
+        targetGroup.add(mark);
+      };
+      if (currentAppearance.logoData) {
+        const img = new Image();
+        img.onload = () => drawNameAndAdd(img);
+        img.onerror = () => drawNameAndAdd(null);
+        img.src = currentAppearance.logoData;
+      } else drawNameAndAdd(null);
+    }
+
+    function createWoodPalletMesh(pL, pW, pH) {
+      const palletGroup = new THREE.Group();
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x9a6b3e, roughness: 0.92 });
+      const runnerH = pH * 0.45;
+      const deckH = pH - runnerH;
+
+      // Bottom runners (3 longitudinal blocks)
+      for(let i=0; i<3; i++) {
+        const zPos = -pW * 0.38 + i * pW * 0.38;
+        const runner = new THREE.Mesh(new THREE.BoxGeometry(pL, runnerH, pW * 0.12), woodMat);
+        runner.position.set(pL/2, runnerH/2, zPos);
+        runner.castShadow = true;
+        palletGroup.add(runner);
+      }
+
+      // Top Deck Planks (5 slats)
+      const slats = 5;
+      const slatW = pW / slats;
+      for(let i=0; i<slats; i++) {
+        const zPos = -pW/2 + slatW * (i + 0.5);
+        const slat = new THREE.Mesh(new THREE.BoxGeometry(pL, deckH, slatW * 0.85), woodMat);
+        slat.position.set(pL/2, runnerH + deckH/2, zPos);
+        slat.castShadow = true;
+        palletGroup.add(slat);
+      }
+      return palletGroup;
+    }
+
+    /* =========================================================
+       4. CALCULATION & PACKING OPTIMIZATION ALGORITHMS
+       ========================================================= */
+    function cmToM(v) { return (parseFloat(v) || 0) / 100; }
+
+    // 散装最大容量与实际 3D 排布共用同一候选朝向、门高及门宽约束，避免按钮给出不可执行的箱数。
+    function getBestFloorFit(c, bL, bW, bH, rule) {
+      if (!(bL > 0 && bW > 0 && bH > 0)) return null;
+      let orientations;
+      if (rule === "upright") {
+        orientations = [{l:bL,w:bW,h:bH},{l:bW,w:bL,h:bH}];
+      } else if (rule === "lengthwise") {
+        orientations = [{l:bL,w:bW,h:bH}];
+      } else if (rule === "widthwise") {
+        orientations = [{l:bW,w:bL,h:bH}];
+      } else {
+        orientations = [
+          {l:bL,w:bW,h:bH},{l:bW,w:bL,h:bH},
+          {l:bL,w:bH,h:bW},{l:bH,w:bL,h:bW},
+          {l:bW,w:bH,h:bL},{l:bH,w:bW,h:bL}
+        ];
+      }
+      const [cL,cW,cH] = c.inside;
+      const maxH = Math.min(cH,c.door[1]);
+      let best = null;
+      orientations.forEach(function(o){
+        if (o.l > cL || o.w > cW || o.h > maxH || o.w > c.door[0]) return;
+        const nx=Math.floor((cL+1e-8)/o.l), nz=Math.floor((cW+1e-8)/o.w), ny=Math.floor((maxH+1e-8)/o.h);
+        const cap=nx*nz*ny;
+        if(cap>0 && (!best || cap>best.cap)) best={...o,nx:nx,nz:nz,ny:ny,cap:cap};
+      });
+      return best;
+    }
+
+    function getBestBlockFit(c, item, rule, availableLength = c.inside[0]) {
+      const {length:l, width:w, height:h, requested} = item;
+      if (!(l > 0 && w > 0 && h > 0)) return null;
+      let orientations;
+      if (rule === "upright") orientations = [{l,w,h},{l:w,w:l,h}];
+      else if (rule === "lengthwise") orientations = [{l,w,h}];
+      else if (rule === "widthwise") orientations = [{l:w,w:l,h}];
+      else orientations = [{l,w,h},{l:w,w:l,h},{l,w:h,h:w},{l:h,w:l,h:w},{l:w,w:h,h:l},{l:h,w:w,h:l}];
+      const maxH = Math.min(c.inside[2], c.door[1]);
+      const fitOptions = orientations.filter(o => o.l <= c.inside[0] && o.w <= c.inside[1] && o.w <= c.door[0] && o.h <= maxH)
+        .map(o => {
+          const rows = Math.floor((c.inside[1] + 1e-8) / o.w);
+          const layers = Math.floor((maxH + 1e-8) / o.h);
+          const perSlice = rows * layers;
+          const slicesNeeded = Math.ceil(requested / perSlice);
+          const slicesAvailable = Math.floor((availableLength + 1e-8) / o.l);
+          const loadable = Math.min(requested, perSlice * slicesAvailable);
+          return {...o, rows, layers, perSlice, slicesNeeded, slicesAvailable, loadable, neededLength:slicesNeeded * o.l};
+        }).filter(o => o.perSlice > 0);
+      fitOptions.sort((a,b) => b.loadable - a.loadable || a.neededLength - b.neededLength || b.perSlice - a.perSlice || a.l - b.l);
+      return fitOptions[0] || null;
+    }
+
+    /* =========================================================
+       4. CALCULATION, PACKING & SEQUENTIAL LOADING ANIMATION ENGINE
+       ========================================================= */
+    let allCargoSequence = []; // 顺序装箱列表：包含所有计算出的货物单元
+    let animTimer = null;
+    let isAnimPaused = false;
+    let animSpeed = 1; // 0.5, 1, 3, 8, 'instant'
+    let currentLoadedBoxCount = 0;
+    let activeContainerCalcMeta = null;
+
+    function stopLoadingAnimation() {
+      if (animTimer) {
+        clearInterval(animTimer);
+        animTimer = null;
+      }
+    }
+
+    function updateCargoEntryMotion(now) {
+      if (!allCargoSequence.length) return;
+      const travelMs = 220;
+      for (const item of allCargoSequence) {
+        if (!item.entering || !item.mesh || !item.edges) continue;
+        const t = Math.max(0, Math.min(1, (now - item.slideStartedAt) / travelMs));
+        const eased = 1 - Math.pow(1 - t, 3);
+        const x = item.entryX + (item.targetX - item.entryX) * eased;
+        item.mesh.position.set(x, item.targetY, item.targetZ);
+        item.edges.position.copy(item.mesh.position);
+        if (t >= 1) item.entering = false;
+      }
+    }
+
+    function applyLoadedState(count, isUserScrub = false) {
+      if (!activeContainerCalcMeta) return;
+      const meta = activeContainerCalcMeta;
+      const totalPlanned = allCargoSequence.length;
+      const targetCount = Math.max(0, Math.min(totalPlanned, count));
+      currentLoadedBoxCount = targetCount;
+
+      // 更新3D箱体可见性与落位微动画
+      for (let i = 0; i < totalPlanned; i++) {
+        const item = allCargoSequence[i];
+        if (!item.mesh || !item.edges) continue;
+        if (i < targetCount) {
+          if (!item.mesh.visible) {
+            item.mesh.visible = true;
+            item.edges.visible = true;
+            if (isUserScrub) {
+              item.mesh.position.set(item.targetX, item.targetY, item.targetZ);
+              item.edges.position.copy(item.mesh.position);
+              item.entering = false;
+            } else {
+              // 每个纸箱从柜门外侧进入，再沿柜长移动到排布位置。
+              item.entryX = activeContainerCalcMeta.cL + 0.65;
+              item.slideStartedAt = performance.now();
+              item.entering = true;
+              item.mesh.position.set(item.entryX, item.targetY, item.targetZ);
+              item.edges.position.copy(item.mesh.position);
+            }
+          } else if (isUserScrub) {
+            item.entering = false;
+            item.mesh.position.set(item.targetX, item.targetY, item.targetZ);
+            item.edges.position.copy(item.mesh.position);
+          }
+        } else {
+          item.mesh.visible = false;
+          item.edges.visible = false;
+          item.entering = false;
+        }
+      }
+
+      // 按已播放到的每个货箱类型分别累计，支持多种不同尺寸散货。
+      const loadedByType = Object.create(null);
+      for (let i = 0; i < targetCount; i++) {
+        const typeId = allCargoSequence[i].typeId || "main";
+        loadedByType[typeId] = (loadedByType[typeId] || 0) + 1;
+      }
+      const mainPlacedCount = loadedByType.main || 0;
+      const liveCargoCbm = meta.cargoTypes.reduce((sum,type) => sum + (loadedByType[type.id] || 0) * type.cbm, 0);
+      const liveOccupiedCbm = liveCargoCbm + meta.palletVolumeTotal;
+      const liveGrossKg = meta.cargoTypes.reduce((sum,type) => sum + (loadedByType[type.id] || 0) * type.gross, 0) + meta.palletTareTotal;
+
+      const utilPercent = (liveOccupiedCbm / meta.c.cbm) * 100;
+      const remainingCbm = Math.max(0, meta.c.cbm - liveOccupiedCbm);
+      const density = liveOccupiedCbm > 0 ? (liveGrossKg / liveOccupiedCbm) : 0;
+      const isHeavyCargo = density > 330;
+
+      // 实时更新看板指标卡片数据
+      $("mTotalCbm").innerHTML = `${liveOccupiedCbm.toFixed(2)} <small>m³</small>`;
+      $("mSingleCbmSub").textContent = bi("主货单箱: ", "Main carton: ") + meta.singleBoxCbm.toFixed(4) + " m³" + (meta.cargoTypes.length > 1 ? bi(" · 另有 " + (meta.cargoTypes.length - 1) + " 种散货", " · plus " + (meta.cargoTypes.length - 1) + " cargo types") : "");
+
+      $("mCartonRatio").innerHTML = targetCount.toLocaleString() + " / " + meta.totalRequested.toLocaleString() + " <small>" + bi("箱", "cartons") + "</small>";
+      const zones = meta.cargoTypes.filter(type => type.requested > 0).map(type => type.name + " " + (loadedByType[type.id] || 0) + "/" + type.requested).join(" · ");
+      $("mGridArrangement").title = zones;
+      $("mGridArrangement").textContent = currentMode === "floor"
+        ? bi("分区: " + zones, "Zones: " + zones)
+        : bi("托盘位: " + meta.gridX + "×" + meta.gridZ + " = " + (meta.gridX*meta.gridZ) + "托 (已用" + meta.usedPallets + "托) · " + zones, "Pallet slots: " + meta.gridX + "×" + meta.gridZ + " = " + (meta.gridX*meta.gridZ) + " (used " + meta.usedPallets + ") · " + zones);
+
+      $("mTotalWeight").innerHTML = `${liveGrossKg.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} <small>kg</small>`;
+      $("mWeightStatus").innerHTML = liveGrossKg > meta.c.maxPayload * 1000
+        ? `<span style="color:var(--red); font-weight:800;">⚠️ ${bi("超出集装箱安全载重限额", "Payload limit exceeded")} (${meta.c.maxPayload}T)</span>`
+        : bi(`安全载重限额: ${meta.c.maxPayload} 吨 (当前占比 ${(liveGrossKg / (meta.c.maxPayload*1000)*100).toFixed(1)}%)`, `Payload limit: ${meta.c.maxPayload} T (${(liveGrossKg / (meta.c.maxPayload*1000)*100).toFixed(1)}% used)`);
+
+      $("mRemainingCbm").innerHTML = `${remainingCbm.toFixed(2)} <small>m³</small>`;
+      $("mRemainingSub").textContent = `${bi("标称内容积:", "Nominal capacity:")} ${meta.c.cbm.toFixed(2)} m³`;
+
+      $("utilizationPercent").textContent = `${utilPercent.toFixed(1)}%`;
+      const barFill = $("utilProgressBar");
+      barFill.style.width = `${Math.min(100, utilPercent)}%`;
+      if (utilPercent > 92) barFill.classList.add("overflow");
+      else barFill.classList.remove("overflow");
+
+      $("utilNominalCbm").textContent = `${meta.c.cbm.toFixed(2)} CBM`;
+      $("utilSafeCbm").textContent = `${meta.c.safeCbm.toFixed(2)} CBM`;
+      $("utilOccupiedCbm").textContent = `${liveOccupiedCbm.toFixed(2)} CBM`;
+      $("utilCargoDensity").textContent = isHeavyCargo
+        ? `${bi("重货", "Heavy cargo")} (${density.toFixed(0)} kg/m³)`
+        : `${bi("轻泡货", "Volumetric cargo")} (${density.toFixed(0)} kg/m³)`;
+      $("utilCargoDensity").style.color = isHeavyCargo ? "var(--accent)" : "var(--primary)";
+
+      // 更新动画控制 HUD 状态
+      const slider = $("animProgressSlider");
+      if (!isUserScrub) slider.value = targetCount;
+
+      const badge = $("animStatusBadge");
+      const pct = totalPlanned > 0 ? ((targetCount / totalPlanned) * 100).toFixed(0) : 0;
+      if (targetCount >= totalPlanned && totalPlanned > 0) {
+        badge.innerHTML = `✅ ${bi("全部装载完成", "Loading complete")}: <b>${targetCount} / ${totalPlanned} ${bi("箱", "cartons")}</b> (100%)`;
+        $("btnPlayIcon").textContent = "🔁";
+        $("btnPlayText").textContent = bi("重播", "Replay");
+      } else {
+        badge.innerHTML = `📦 ${bi("正在装载", "Loading")}: <b>${targetCount} / ${totalPlanned} ${bi("箱", "cartons")}</b> (${pct}%)`;
+        $("btnPlayIcon").textContent = isAnimPaused ? "▶️" : "⏸️";
+        $("btnPlayText").textContent = isAnimPaused ? bi("继续", "Resume") : bi("暂停", "Pause");
+      }
+    }
+
+    function startLoadingAnimation(fromStart = true) {
+      stopLoadingAnimation();
+      isAnimPaused = false;
+      const totalPlanned = allCargoSequence.length;
+
+      if (totalPlanned === 0) {
+        applyLoadedState(0);
+        return;
+      }
+
+      if (fromStart) {
+        currentLoadedBoxCount = 0;
+        applyLoadedState(0);
+      }
+
+      if (animSpeed === "instant") {
+        applyLoadedState(totalPlanned);
+        return;
+      }
+
+      // 1x 约每箱 18ms，680 箱可清晰观察但不会拖得过久；高倍速按批次推进。
+      const speed = Number(animSpeed) || 1;
+      const intervalMs = speed < 1 ? 36 : (speed >= 3 ? 16 : 20);
+      const stepSize = Math.max(1, Math.ceil(intervalMs * speed / 18));
+
+      animTimer = setInterval(() => {
+        if (isAnimPaused) return;
+
+        currentLoadedBoxCount += stepSize;
+        if (currentLoadedBoxCount >= totalPlanned) {
+          currentLoadedBoxCount = totalPlanned;
+          applyLoadedState(currentLoadedBoxCount);
+          stopLoadingAnimation();
+        } else {
+          applyLoadedState(currentLoadedBoxCount);
+        }
+      }, intervalMs);
+    }
+
+    function validateContainerInputs(c) {
+      const errors = [];
+      const numeric = id => Number($(id).value);
+      const required = [
+        ["boxL", "外箱长 / Carton length"], ["boxW", "外箱宽 / Carton width"],
+        ["boxH", "外箱高 / Carton height"], ["boxGross", "单箱毛重 / Gross weight"],
+        ["boxCount", "主货箱数 / Carton quantity"]
+      ];
+      required.forEach(([id, label]) => {
+        const value = numeric(id);
+        const isWeight = id === "boxGross";
+        if (!Number.isFinite(value) || (isWeight ? value < 0 : value <= 0)) errors.push(bi(`${label.split(" / ")[0]}必须填写${isWeight ? "有效" : "大于零的有效"}数字。`, `${label.split(" / ")[1]} must be ${isWeight ? "a valid non-negative number" : "a valid positive number"}.`));
+      });
+      const mainQtyValue = numeric("boxCount");
+      if (Number.isFinite(mainQtyValue) && !Number.isInteger(mainQtyValue)) errors.push(bi("主货箱数必须是整数。", "Main carton quantity must be a whole number."));
+      const bL = cmToM($("boxL").value), bW = cmToM($("boxW").value), bH = cmToM($("boxH").value);
+      const validBoxDims = [bL, bW, bH].every(value => Number.isFinite(value) && value > 0);
+      if (validBoxDims && currentMode === "floor" && !getBestFloorFit(c, bL, bW, bH, $("boxOrientationRule").value)) {
+        errors.push(bi("外箱尺寸无法通过柜门或超出柜内净尺寸，请检查长宽高及摆放朝向。", "Carton cannot pass the door or exceeds the usable interior. Check dimensions and orientation."));
+      }
+      if (currentMode === "pallet") {
+        const pL = cmToM($("palletL").value), pW = cmToM($("palletW").value), pH = cmToM($("palletH").value);
+        const layers = Number($("palletLayers").value), perLayer = Number($("palletPerLayer").value);
+        if (![pL, pW, pH, layers, perLayer].every(value => Number.isFinite(value) && value > 0)) {
+          errors.push(bi("打托模式需要填写有效的托盘长、宽、高、层数和每层箱数。", "Palletized loading requires positive pallet dimensions, layers, and cartons per layer."));
+        } else {
+          if (pL > c.inside[0] || pW > c.inside[1]) errors.push(bi("托盘长宽超出柜内地板尺寸。", "Pallet length/width exceeds the container floor."));
+          if (validBoxDims && (bL > pL || bW > pW)) errors.push(bi("外箱底面放不进托盘，请调整外箱或托盘尺寸。", "Carton footprint does not fit the pallet. Adjust carton or pallet dimensions."));
+          if (validBoxDims && pH + layers * bH > Math.min(c.inside[2], c.door[1]) + 1e-8) errors.push(bi("托盘加堆码总高度超过柜内净高或门口净高。", "Pallet plus carton stack exceeds the interior or door height."));
+          if (validBoxDims && bL > 0 && bW > 0 && perLayer > Math.floor(pL / bL) * Math.floor(pW / bW)) errors.push(bi("每层箱数超过托盘可摆放容量。", "Cartons per layer exceed the pallet footprint capacity."));
+        }
+      }
+      getAccessoryCargoInputs().forEach((item, index) => {
+        const qty = Number(item.quantity);
+        const prefix = bi("辅货 " + (index + 1), "Cargo " + (index + 1));
+        if (!Number.isFinite(qty) || qty < 0) {
+          errors.push(bi(prefix + "数量不能为负数。", prefix + " quantity cannot be negative."));
+          return;
+        }
+        if (!Number.isInteger(qty)) errors.push(bi(prefix + "数量必须是整数。", prefix + " quantity must be a whole number."));
+        if (qty <= 0) return;
+        const dims = [item.length, item.width, item.height].map(cmToM);
+        const weight = Number(item.gross);
+        if (!dims.every(value => Number.isFinite(value) && value > 0)) {
+          errors.push(bi(prefix + "数量大于零时，必须填写有效的箱长、宽、高。", "Enter valid dimensions for " + prefix + " when its quantity is greater than zero."));
+        } else if (!getBestFloorFit(c, dims[0], dims[1], dims[2], "auto")) {
+          errors.push(bi(prefix + "尺寸无法通过柜门或超出柜内净尺寸。", prefix + " cannot pass the door or exceeds the usable interior."));
+        }
+        if (!Number.isFinite(weight) || weight < 0) errors.push(bi(prefix + "单箱毛重必须是有效的非负数。", prefix + " gross weight must be a valid non-negative number."));
+      });
+      return errors;
+    }
+
+    function showValidationErrors(errors) {
+      const box = $("validationErrors");
+      box.replaceChildren();
+      box.hidden = errors.length === 0;
+      if (!errors.length) return;
+      const heading = document.createElement("strong");
+      heading.textContent = bi("请修正以下输入：", "Please correct these inputs:");
+      const list = document.createElement("ul");
+      errors.forEach(message => { const item = document.createElement("li"); item.textContent = message; list.appendChild(item); });
+      box.append(heading, list);
+    }
+
+    function runContainerCalculation(shouldAnimate = false) {
+      stopLoadingAnimation();
+
+      const cType = $("containerType").value;
+      const c = CONTAINERS[cType];
+      const [cL, cW, cH] = c.inside;
+      const doorH = c.door[1];
+
+      const formRequestedTotal = Math.max(0, Math.floor(Number($("boxCount").value) || 0)) + getAccessoryCargoInputs().reduce((sum,item) => sum + Math.max(0, Math.floor(Number(item.quantity) || 0)), 0);
+      const errors = validateContainerInputs(c);
+      showValidationErrors(errors);
+      if (errors.length) {
+        allCargoSequence = [];
+        activeContainerCalcMeta = null;
+        if (renderer && loadGroup) { clearLoadGroup(); drawContainerFrame(c); }
+        $("animProgressSlider").min = 0; $("animProgressSlider").max = 0; $("animProgressSlider").value = 0;
+        $("animStatusBadge").textContent = bi("請先修正裝柜參數", "Correct loading inputs first");
+        $("mTotalCbm").innerHTML = `0.00 <small>m³</small>`;
+        $("mCartonRatio").innerHTML = "0 / " + formRequestedTotal.toLocaleString() + " <small>" + bi("箱", "cartons") + "</small>";
+        $("mTotalWeight").innerHTML = `0.0 <small>kg</small>`;
+        $("mRemainingCbm").innerHTML = `${c.cbm.toFixed(2)} <small>m³</small>`;
+        $("mRemainingSub").textContent = `${bi("標稱內容積:", "Nominal capacity:")} ${c.cbm.toFixed(2)} m³`;
+        $("utilizationPercent").textContent = "0.0%";
+        $("utilProgressBar").style.width = "0%";
+        $("utilOccupiedCbm").textContent = "0.00 CBM";
+        $("summaryBannerTitle").textContent = bi("⚠️ 参数不完整，暂不能生成排布", "⚠️ Inputs incomplete; cannot generate the layout");
+        $("summaryBannerDesc").textContent = errors.join(" ");
+        return;
+      }
+
+      // Cargo inputs (converted to meters)
+      const bL = cmToM($("boxL").value);
+      const bW = cmToM($("boxW").value);
+      const bH = cmToM($("boxH").value);
+      const boxGross = parseFloat($("boxGross").value) || 0;
+      const reqCount = parseInt($("boxCount").value) || 0;
+      const orientRule = $("boxOrientationRule").value;
+      const cargoTypes = [{
+        id:"main", kind:"main", name:$("cargoName").value.trim() || bi("主货外箱", "Main cargo"),
+        length:bL, width:bW, height:bH, gross:boxGross, requested:reqCount, colorIndex:-1
+      }];
+      getAccessoryCargoInputs().forEach((item, index) => {
+        const requested = Math.floor(Number(item.quantity) || 0);
+        if (requested <= 0) return;
+        const length = cmToM(item.length), width = cmToM(item.width), height = cmToM(item.height);
+        cargoTypes.push({
+          id:"cargo-" + (index + 1), kind:"accessory",
+          name:item.name.trim() || bi("辅货 " + (index + 1), "Cargo " + (index + 1)),
+          length, width, height, gross:Number(item.gross) || 0, requested, colorIndex:index
+        });
+      });
+      const totalRequested = cargoTypes.reduce((sum,type) => sum + type.requested, 0);
+      const requestedVolume = cargoTypes.reduce((sum,type) => sum + type.length * type.width * type.height * type.requested, 0);
+      const requestedGross = cargoTypes.reduce((sum,type) => sum + type.gross * type.requested, 0);
+
+      const canDraw3D = !!(window.THREE && renderer && loadGroup);
+      if (canDraw3D) {
+        clearLoadGroup();
+        drawContainerFrame(c);
+      }
+
+      const singleBoxCbm = bL * bW * bH;
+      $("singleCartonSummary").innerHTML = "<b>" + bi("主货单箱体积:", "Main carton volume:") + "</b> " + singleBoxCbm.toFixed(4) + " m³ (CBM) &nbsp;|&nbsp; <b>" + bi("所有箱型需求体积:", "Requested volume, all types:") + "</b> " + requestedVolume.toFixed(3) + " m³ &nbsp;|&nbsp; <b>" + bi("需求毛重:", "Requested gross weight:") + "</b> " + requestedGross.toLocaleString() + " kg";
+
+      let loadedMainCount = 0;
+      let gridX = 0, gridZ = 0, gridY = 0;
+      let actualL = bL, actualW = bW, actualH = bH;
+      let usedPallets = 0;
+
+      // 统一自然牛皮纸基色，只用轻微明度差区分箱体；不使用荧光色或虚线纹理。
+      const baseCartonColor = canDraw3D ? new THREE.Color(currentAppearance.cartonColor) : null;
+      const tintFactors = [0.96, 1.02, 1.06, 0.91, 1.00];
+      const kraftMaterials = canDraw3D ? tintFactors.map(factor => new THREE.MeshStandardMaterial({ color: baseCartonColor.clone().multiplyScalar(factor), roughness: 0.9 })) : [];
+      const boxEdgeMaterials = canDraw3D ? tintFactors.map(() => new THREE.LineBasicMaterial({ color: baseCartonColor.clone().multiplyScalar(0.66), transparent: true, opacity: 0.52 })) : [];
+      let cartonColorIndex = 0;
+      const accessoryMaterials = canDraw3D ? accessoryBoxColors.map(hex => new THREE.MeshStandardMaterial({color:parseInt(hex.slice(1),16), roughness:0.86})) : [];
+      const accessoryEdgeMaterials = canDraw3D ? accessoryBoxColors.map(hex => new THREE.LineBasicMaterial({color:parseInt(hex.slice(1),16), transparent:true, opacity:0.55})) : [];
+      function nextCartonMaterial(type) {
+        if (!canDraw3D) return {material:null,edge:null};
+        if (type.kind === "main") {
+          const index = cartonColorIndex++ % kraftMaterials.length;
+          return {material:kraftMaterials[index],edge:boxEdgeMaterials[index]};
+        }
+        const index = type.colorIndex % accessoryMaterials.length;
+        return {material:accessoryMaterials[index],edge:accessoryEdgeMaterials[index]};
+      }
+
+      allCargoSequence = [];
+      function appendCargoBox(type, size, x, y, z) {
+        let mesh = null, edges = null;
+        if (canDraw3D) {
+          const geometry = new THREE.BoxGeometry(size.l * 0.985, size.h * 0.985, size.w * 0.985);
+          const style = nextCartonMaterial(type);
+          mesh = new THREE.Mesh(geometry, style.material);
+          mesh.position.set(x, y, z);
+          mesh.castShadow = false;
+          mesh.receiveShadow = false;
+          mesh.visible = false;
+          loadGroup.add(mesh);
+          edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), style.edge);
+          edges.position.copy(mesh.position);
+          edges.visible = false;
+          loadGroup.add(edges);
+        }
+        allCargoSequence.push({
+          mesh, edges, targetX:x, targetY:y, targetZ:z, entryX:cL + 0.65,
+          type:type.kind, typeId:type.id, index:allCargoSequence.length + 1
+        });
+        type.loadedCount = (type.loadedCount || 0) + 1;
+      }
+      let looseCursorX = 0.03;
+      function packLooseCargoBlock(type, rule) {
+        const fit = getBestBlockFit(c, type, rule, Math.max(0, cL - looseCursorX));
+        type.loadedCount = 0;
+        type.fit = fit;
+        if (!fit || fit.loadable <= 0) return;
+        for (let i = 0; i < fit.loadable; i++) {
+          const slice = Math.floor(i / fit.perSlice);
+          const withinSlice = i % fit.perSlice;
+          const row = Math.floor(withinSlice / fit.layers);
+          const layer = withinSlice % fit.layers;
+          const x = looseCursorX + slice * fit.l + fit.l / 2;
+          const y = 0.03 + layer * fit.h + fit.h / 2;
+          const z = -cW / 2 + (cW - fit.rows * fit.w) / 2 + row * fit.w + fit.w / 2;
+          appendCargoBox(type, fit, x, y, z);
+        }
+        looseCursorX += Math.ceil(fit.loadable / fit.perSlice) * fit.l;
+      }
+
+      if (currentMode === "floor") {
+        // 散货按箱型分区，沿柜长依次铺放；每个箱体都落在地板或下层箱体上。
+        cargoTypes.forEach((type, index) => packLooseCargoBlock(type, index === 0 ? orientRule : "auto"));
+        loadedMainCount = cargoTypes[0].loadedCount || 0;
+        if (cargoTypes[0].fit) {
+          gridX = Math.ceil(loadedMainCount / cargoTypes[0].fit.perSlice);
+          gridZ = cargoTypes[0].fit.rows;
+          gridY = cargoTypes[0].fit.layers;
+        }
+      } else {
+        // --- PALLETIZED LOADING CALCULATION ---
+        const pL = cmToM($("palletL").value);
+        const pW = cmToM($("palletW").value);
+        const pH = cmToM($("palletH").value);
+        const pTare = parseFloat($("palletTare").value) || 0;
+        const pLayers = parseInt($("palletLayers").value) || 1;
+        const pPerLayer = parseInt($("palletPerLayer").value) || 1;
+
+        const slotsX = Math.floor(cL / pL);
+        const slotsZ = Math.floor(cW / pW);
+        const totalPalletSlots = slotsX * slotsZ;
+
+        const boxesPerPallet = pLayers * pPerLayer;
+        const neededPallets = Math.ceil(reqCount / boxesPerPallet);
+        const loadedPallets = Math.min(neededPallets, totalPalletSlots);
+        loadedMainCount = Math.min(reqCount, loadedPallets * boxesPerPallet);
+        usedPallets = loadedPallets;
+
+        gridX = slotsX; gridZ = slotsZ; gridY = pLayers;
+
+        let remBoxes = loadedMainCount;
+        let palIdx = 0;
+        let placed = 0;
+
+        for (let ix = 0; ix < slotsX && palIdx < loadedPallets; ix++) {
+          for (let iz = 0; iz < slotsZ && palIdx < loadedPallets; iz++) {
+            const posX = ix * pL;
+            const posZ = -cW / 2 + (cW - slotsZ * pW) / 2 + iz * pW;
+            
+            if (canDraw3D) {
+              const palletMesh = createWoodPalletMesh(pL, pW, pH);
+              palletMesh.position.set(posX, 0.03, posZ + pW/2);
+              loadGroup.add(palletMesh);
+            }
+
+            const boxesThisPallet = Math.min(boxesPerPallet, remBoxes);
+            const colsOnP = Math.floor(pL / bL) || 1;
+            const rowsOnP = Math.floor(pW / bW) || 1;
+
+            let inPalPlaced = 0;
+            for (let ly = 0; ly < pLayers && inPalPlaced < boxesThisPallet; ly++) {
+              for (let col = 0; col < colsOnP && inPalPlaced < boxesThisPallet; col++) {
+                for (let row = 0; row < rowsOnP && inPalPlaced < boxesThisPallet; row++) {
+                  const bx = posX + col * bL + bL / 2;
+                  const by = 0.03 + pH + ly * bH + bH / 2;
+                  const bz = posZ + row * bW + bW / 2;
+
+                  appendCargoBox(cargoTypes[0], {l:bL, w:bW, h:bH}, bx, by, bz);
+
+                  inPalPlaced++;
+                  remBoxes--;
+                }
+              }
+            }
+            palIdx++;
+          }
+        }
+        looseCursorX = 0.03 + Math.ceil(usedPallets / Math.max(1, slotsZ)) * pL;
+        cargoTypes.slice(1).forEach(type => packLooseCargoBlock(type, "auto"));
+      }
+
+      // Calculate Metadata constants
+      const palletVolumeTotal = currentMode === "pallet" ? (usedPallets * cmToM($("palletL").value) * cmToM($("palletW").value) * cmToM($("palletH").value)) : 0;
+      const palletTareTotal = currentMode === "pallet" ? (usedPallets * (parseFloat($("palletTare").value) || 0)) : 0;
+      cargoTypes.forEach(type => { type.loadedCount = type.loadedCount || 0; type.cbm = type.length * type.width * type.height; });
+      const totalLoaded = cargoTypes.reduce((sum,type) => sum + type.loadedCount, 0);
+      const totalUnloaded = cargoTypes.reduce((sum,type) => sum + Math.max(0, type.requested - type.loadedCount), 0);
+      const totalCargoCbm = cargoTypes.reduce((sum,type) => sum + type.loadedCount * type.cbm, 0);
+
+      activeContainerCalcMeta = {
+        c: c,
+        cL: cL,
+        cW: cW,
+        cH: cH,
+        totalRequested: totalRequested,
+        totalLoaded: totalLoaded,
+        totalUnloaded: totalUnloaded,
+        cargoTypes: cargoTypes,
+        requestedVolume: requestedVolume,
+        loadedMainCount: loadedMainCount,
+        singleBoxCbm: singleBoxCbm,
+        gridX: gridX,
+        gridZ: gridZ,
+        gridY: gridY,
+        usedPallets: usedPallets,
+        palletVolumeTotal: palletVolumeTotal,
+        palletTareTotal: palletTareTotal
+      };
+
+      // 配置进度条滑块范围
+      const slider = $("animProgressSlider");
+      slider.min = 0;
+      slider.max = allCargoSequence.length;
+      slider.value = 0;
+
+      // 评估方案结论
+      const totalPlanned = allCargoSequence.length;
+      const totalOccupiedCbm = totalCargoCbm + palletVolumeTotal;
+      const utilPercent = (totalOccupiedCbm / c.cbm) * 100;
+      const remainingCbm = Math.max(0, c.cbm - totalOccupiedCbm);
+
+      const bannerTitle = $("summaryBannerTitle");
+      const bannerDesc = $("summaryBannerDesc");
+      if (totalUnloaded > 0) {
+        const remainingByType = cargoTypes.filter(type => type.requested > type.loadedCount).map(type => type.name + ": " + (type.requested - type.loadedCount) + bi(" 箱", " cartons")).join("；");
+        bannerTitle.textContent = bi("⚠️ 当前分区排布有 " + totalUnloaded + " 箱未能装入", "⚠️ Current zone layout leaves " + totalUnloaded + " cartons unloaded");
+        bannerDesc.textContent = bi("分类型未装入：" + remainingByType + "。可调整货物添加顺序或更换柜型；这是当前规则排布结果。", "Unloaded by type: " + remainingByType + ". Try changing cargo order or container type; this reflects the current packing rule.");
+      } else if (utilPercent > 90) {
+        bannerTitle.textContent = bi("🎯 所有 " + totalLoaded + " 箱已装入：空间利用率 " + utilPercent.toFixed(1) + "%", "🎯 All " + totalLoaded + " cartons loaded: " + utilPercent.toFixed(1) + "% utilization");
+        bannerDesc.textContent = bi("所有箱型已按添加顺序分区排入柜内。", "All carton types are arranged in sequential zones.");
+      } else {
+        bannerTitle.textContent = bi("✅ 方案核算通过：全部 " + totalLoaded + " 箱已装入", "✅ Plan checked: all " + totalLoaded + " cartons fit");
+        bannerDesc.textContent = bi("实际占用体积 " + totalOccupiedCbm.toFixed(2) + " CBM（利用率 " + utilPercent.toFixed(1) + "%），柜内剩余 " + remainingCbm.toFixed(2) + " CBM。", "Occupied volume " + totalOccupiedCbm.toFixed(2) + " CBM (" + utilPercent.toFixed(1) + "%); remaining " + remainingCbm.toFixed(2) + " CBM.");
+      }
+
+      resetCameraPosition(cL, cW, cH);
+
+      // 自动启动从第1箱到目标总箱数的渐进装载动画
+      if (shouldAnimate) startLoadingAnimation(true);
+      else {
+        isAnimPaused = false;
+        applyLoadedState(totalPlanned, true);
+      }
+    }
+
+    /* =========================================================
+       5. TAB 2: PACKAGING & FREIGHT CBM CALCULATOR
+       ========================================================= */
+    function calculateCartonPackaging() {
+      const iL = parseFloat($("itemL").value) || 0;
+      const iW = parseFloat($("itemW").value) || 0;
+      const iH = parseFloat($("itemH").value) || 0;
+      const iNet = parseFloat($("itemNetWeight").value) || 0;
+      const packQty = parseInt($("itemPackQty").value) || 1;
+      const margin = parseFloat($("cartonMargin").value) || 0;
+      const emptyWeight = parseFloat($("emptyCartonWeight").value) || 0;
+      const totalPcs = parseInt($("totalProductPcs").value) || 0;
+
+      let bestCols = Math.round(Math.pow(packQty, 1/3));
+      let bestRows = Math.round(Math.sqrt(packQty / bestCols));
+      let bestLayers = Math.ceil(packQty / (bestCols * bestRows));
+      if (bestCols * bestRows * bestLayers < packQty) bestLayers++;
+
+      const estCartonL = (iL * bestCols) + margin;
+      const estCartonW = (iW * bestRows) + margin;
+      const estCartonH = (iH * bestLayers) + margin;
+
+      const singleCbm = (estCartonL * estCartonW * estCartonH) / 1000000;
+      const singleGrossKg = (iNet * packQty) + emptyWeight;
+
+      const totalCartons = Math.ceil(totalPcs / packQty);
+      const totalBatchCbm = singleCbm * totalCartons;
+      const totalBatchGross = singleGrossKg * totalCartons;
+
+      $("cartonPackResultStrip").innerHTML = `
+        <div style="font-size: 13px; font-weight:800; color:var(--primary); margin-bottom:6px;">
+          📦 ${bi("推荐外箱规格:", "Recommended outer carton:")} ${estCartonL.toFixed(1)} × ${estCartonW.toFixed(1)} × ${estCartonH.toFixed(1)} cm
+        </div>
+        <div class="flex-wrap" style="line-height:1.7;">
+          <span><b>${bi("单箱体积:", "Volume / carton:")}</b> ${singleCbm.toFixed(4)} CBM</span> &nbsp;|&nbsp;
+          <span><b>${bi("单箱毛重:", "Gross / carton:")}</b> ${singleGrossKg.toFixed(2)} kg</span> &nbsp;|&nbsp;
+          <span><b>${bi("总箱数:", "Cartons:")}</b> ${totalCartons.toLocaleString()} ${bi("箱", "ctns")}</span> &nbsp;|&nbsp;
+          <span><b>${bi("出货总体积:", "Shipment volume:")}</b> ${totalBatchCbm.toFixed(2)} CBM</span> &nbsp;|&nbsp;
+          <span><b>${bi("出货总毛重:", "Shipment gross:")}</b> ${totalBatchGross.toLocaleString(undefined, {maximumFractionDigits:1})} kg</span>
+        </div>
+      `;
+
+      const expVol = (estCartonL * estCartonW * estCartonH / 5000) * totalCartons;
+      const airVol = (estCartonL * estCartonW * estCartonH / 6000) * totalCartons;
+      const lclWeightTon = totalBatchGross / 1000;
+
+      $("expVolWeight").textContent = `${expVol.toFixed(1)} kg`;
+      $("expActWeight").textContent = `${totalBatchGross.toFixed(1)} kg`;
+      $("expBillWeight").textContent = `${Math.max(expVol, totalBatchGross).toFixed(1)} kg (${bi(expVol > totalBatchGross ? "取体积重" : "取实重", expVol > totalBatchGross ? "volumetric" : "actual")})`;
+
+      $("airVolWeight").textContent = `${airVol.toFixed(1)} kg`;
+      $("airActWeight").textContent = `${totalBatchGross.toFixed(1)} kg`;
+      $("airBillWeight").textContent = `${Math.max(airVol, totalBatchGross).toFixed(1)} kg (${bi(airVol > totalBatchGross ? "取体积重" : "取实重", airVol > totalBatchGross ? "volumetric" : "actual")})`;
+
+      $("lclCbmVal").textContent = `${totalBatchCbm.toFixed(2)} CBM`;
+      $("lclWeightTon").textContent = `${lclWeightTon.toFixed(2)} ${bi("吨", "T")}`;
+      $("lclBillingTon").textContent = `${Math.max(totalBatchCbm, lclWeightTon).toFixed(2)} ${bi("计费吨", "revenue tons")} (RT)`;
+    }
+
+    /* =========================================================
+       6. UI EVENT LISTENERS
+       ========================================================= */
+    function updateContainerBrief() {
+      const c = CONTAINERS[$("containerType").value];
+      $("containerSpecBrief").innerHTML = `
+        <span><b>${bi("内尺寸:", "Inside:")}</b> ${c.inside.map(x=>x.toFixed(3)).join(" × ")} m</span>
+        <span><b>${bi("门尺寸:", "Door:")}</b> ${c.door.map(x=>x.toFixed(2)).join(" × ")} m</span>
+        <span><b>${bi("标称容积:", "Nominal volume:")}</b> ${c.cbm.toFixed(2)} CBM</span>
+        <span><b>${bi("最大载重:", "Max payload:")}</b> ${c.maxPayload} T</span>
+      `;
+      $("containerDimBadge").textContent = `${$("containerType").value} · ${c.inside.map(x=>x.toFixed(3)).join(" × ")} m`;
+      $("overlayInsideDim").textContent = `${c.inside.map(x=>x.toFixed(3)).join(" × ")} m`;
+      $("overlayDoorDim").textContent = bi(`宽 ${c.door[0].toFixed(2)} × 高 ${c.door[1].toFixed(2)} m`, `W ${c.door[0].toFixed(2)} × H ${c.door[1].toFixed(2)} m`);
+      $("overlayTare").textContent = bi(`约 ${c.tare.toFixed(1)} 吨 (Tare)`, `Approx. ${c.tare.toFixed(1)} T (Tare)`);
+    }
+
+    function setupEventListeners() {
+      $("langZh").addEventListener("click", () => setLanguage("zh"));
+      $("langEn").addEventListener("click", () => setLanguage("en"));
+      $("btnSettings").addEventListener("click", openSettings);
+      $("btnCloseSettings").addEventListener("click", closeSettings);
+      $("settingsBackdrop").addEventListener("click", event => { if (event.target === $("settingsBackdrop")) closeSettings(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape" && !$("settingsBackdrop").hidden) closeSettings(); });
+      $("btnSaveTemplate").addEventListener("click", () => {
+        openSettings();
+        setTimeout(() => $("templateNameInput").focus(), 0);
+      });
+      $("btnConfirmSaveTemplate").addEventListener("click", saveCurrentTemplate);
+      $("btnAddAccessoryCargo").addEventListener("click", () => {
+        const items = getAccessoryCargoInputs();
+        items.push({name:"", length:"", width:"", height:"", quantity:0, gross:0});
+        renderAccessoryCargoInputs(items);
+        runContainerCalculation(false);
+        const last = $("accessoryCargoList").lastElementChild;
+        if (last) last.querySelector('[data-field="name"]').focus();
+      });
+      $("accessoryCargoList").addEventListener("click", event => {
+        const moveButton = event.target.closest("[data-move-cargo]");
+        const removeButton = event.target.closest("[data-remove-cargo]");
+        const targetButton = moveButton || removeButton;
+        if (!targetButton) return;
+        const row = targetButton.closest(".accessory-cargo-item");
+        const items = getAccessoryCargoInputs();
+        const index = Array.from($("accessoryCargoList").children).indexOf(row);
+        if (moveButton && index >= 0) {
+          const nextIndex = moveButton.dataset.moveCargo === "up" ? index - 1 : index + 1;
+          if (nextIndex < 0 || nextIndex >= items.length) return;
+          [items[index], items[nextIndex]] = [items[nextIndex], items[index]];
+        } else if (removeButton && index >= 0) items.splice(index, 1);
+        renderAccessoryCargoInputs(items);
+        runContainerCalculation(false);
+      });
+      let accessoryDebounceTimer = null;
+      $("accessoryCargoList").addEventListener("input", event => {
+        if (!event.target.matches("[data-field]")) return;
+        clearTimeout(accessoryDebounceTimer);
+        accessoryDebounceTimer = setTimeout(() => runContainerCalculation(false), 250);
+      });
+      $("templateNameInput").addEventListener("keydown", event => { if (event.key === "Enter") saveCurrentTemplate(); });
+      $("customTemplateList").addEventListener("click", event => {
+        const button = event.target.closest("button[data-id]");
+        if (!button) return;
+        const template = customTemplates.find(item => item.id === button.dataset.id);
+        if (!template) return;
+        if (button.classList.contains("template-apply")) {
+          applyFormState(template.state);
+          closeSettings();
+          $("templateFeedback").textContent = bi(`已应用模板“${template.name}”。`, `Template “${template.name}” applied.`);
+        } else if (button.classList.contains("template-remove")) {
+          customTemplates = customTemplates.filter(item => item.id !== template.id);
+          writeStoredJSON("containerPlannerTemplates", customTemplates);
+          renderCustomTemplateList();
+          renderCustomTemplateOptions();
+        }
+      });
+      $("brandLogoFile").addEventListener("change", async event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        try {
+          pendingLogoData = await readAndResizeLogo(file);
+          $("brandLogoPreview").src = pendingLogoData;
+          $("brandLogoPreview").hidden = false;
+          $("brandPreviewName").textContent = bi("Logo 已载入；点击保存后应用。", "Logo ready; save to apply it.");
+          $("appearanceFeedback").textContent = "";
+        } catch (error) {
+          $("appearanceFeedback").textContent = error.message;
+          event.target.value = "";
+        }
+      });
+      $("btnSaveAppearance").addEventListener("click", saveAppearance);
+      $("btnResetAppearance").addEventListener("click", () => {
+        currentAppearance = { ...APPEARANCE_DEFAULTS };
+        pendingLogoData = "";
+        writeStoredJSON("containerPlannerAppearance", currentAppearance);
+        syncAppearanceControls();
+        applyBrandAppearance(true);
+        $("appearanceFeedback").textContent = bi("已恢复默认外观。", "Default appearance restored.");
+      });
+
+      $("containerType").addEventListener("change", () => {
+        updateContainerBrief();
+        runContainerCalculation();
+      });
+
+      $("btnModeFloor").addEventListener("click", () => {
+        currentMode = "floor";
+        $("btnModeFloor").classList.add("selected");
+        $("btnModePallet").classList.remove("selected");
+        $("palletConfigBox").style.display = "none";
+        runContainerCalculation();
+      });
+
+      $("btnModePallet").addEventListener("click", () => {
+        currentMode = "pallet";
+        $("btnModePallet").classList.add("selected");
+        $("btnModeFloor").classList.remove("selected");
+        $("palletConfigBox").style.display = "block";
+        runContainerCalculation();
+      });
+
+      $("palletPresetSelect").addEventListener("change", (e) => {
+        if (e.target.value !== "custom") {
+          const [l, w, h, tare] = e.target.value.split(",");
+          $("palletL").value = l;
+          $("palletW").value = w;
+          $("palletH").value = h;
+          $("palletTare").value = tare;
+          runContainerCalculation();
+        }
+      });
+
+      $("btnCutaway").addEventListener("click", () => {
+        currentViewMode = "cutaway";
+        $("btnCutaway").classList.add("active");
+        $("btnFull").classList.remove("active");
+        $("btnWireframe").classList.remove("active");
+        runContainerCalculation();
+      });
+
+      $("btnFull").addEventListener("click", () => {
+        currentViewMode = "full";
+        $("btnFull").classList.add("active");
+        $("btnCutaway").classList.remove("active");
+        $("btnWireframe").classList.remove("active");
+        runContainerCalculation();
+      });
+
+      $("btnWireframe").addEventListener("click", () => {
+        currentViewMode = "wireframe";
+        $("btnWireframe").classList.add("active");
+        $("btnCutaway").classList.remove("active");
+        $("btnFull").classList.remove("active");
+        runContainerCalculation();
+      });
+
+      $("btnResetCamera").addEventListener("click", () => {
+        const c = CONTAINERS[$("containerType").value];
+        resetCameraPosition(c.inside[0], c.inside[1], c.inside[2]);
+      });
+
+      $("btnGenerate").addEventListener("click", () => {
+        runContainerCalculation(true);
+      });
+
+      // 3D 渐进式动画控制事件监听
+      $("btnTogglePlay").addEventListener("click", () => {
+        if (currentLoadedBoxCount >= allCargoSequence.length && allCargoSequence.length > 0) {
+          startLoadingAnimation(true);
+          return;
+        }
+        isAnimPaused = !isAnimPaused;
+        if (!isAnimPaused && !animTimer) {
+          startLoadingAnimation(false);
+        } else {
+          $("btnPlayIcon").textContent = isAnimPaused ? "▶️" : "⏸️";
+          $("btnPlayText").textContent = isAnimPaused ? "继续" : "暂停";
+        }
+      });
+
+      $("btnReplayAnim").addEventListener("click", () => {
+        startLoadingAnimation(true);
+      });
+
+      $("animProgressSlider").addEventListener("input", (e) => {
+        stopLoadingAnimation();
+        isAnimPaused = true;
+        applyLoadedState(parseInt(e.target.value) || 0, true);
+      });
+
+      document.querySelectorAll(".anim-speed-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".anim-speed-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const speedVal = btn.dataset.speed;
+          animSpeed = speedVal === "instant" ? "instant" : parseFloat(speedVal);
+          if (animSpeed === "instant") {
+            stopLoadingAnimation();
+            applyLoadedState(allCargoSequence.length);
+          } else {
+            startLoadingAnimation(false);
+          }
+        });
+      });
+      $("btnReset").addEventListener("click", () => {
+        $("boxL").value = "";
+        $("boxW").value = "";
+        $("boxH").value = "";
+        $("boxGross").value = "";
+        $("boxCount").value = "";
+        renderAccessoryCargoInputs([]);
+        runContainerCalculation(false);
+      });
+
+      $("btnFillMaxCapacity").addEventListener("click", () => {
+        const c = CONTAINERS[$("containerType").value];
+        const bL = cmToM($("boxL").value);
+        const bW = cmToM($("boxW").value);
+        const bH = cmToM($("boxH").value);
+        let maxBoxes = 0;
+        if (currentMode === "floor") {
+          const fit = getBestFloorFit(c,bL,bW,bH,$("boxOrientationRule").value);
+          maxBoxes = fit ? fit.cap : 0;
+        } else {
+          const pL=cmToM($("palletL").value), pW=cmToM($("palletW").value);
+          const pLayers=parseInt($("palletLayers").value)||0, perLayer=parseInt($("palletPerLayer").value)||0;
+          const slots=Math.floor(c.inside[0]/pL)*Math.floor(c.inside[1]/pW);
+          const perPallet=Math.floor(pL/bL)*Math.floor(pW/bW);
+          if(pL>0 && pW>0 && bL>0 && bW>0 && pLayers>0 && perLayer>0) maxBoxes=slots*pLayers*Math.min(perLayer,perPallet);
+        }
+        if(maxBoxes>0){
+          $("boxCount").value = maxBoxes;
+          runContainerCalculation();
+        }
+      });
+
+      let debounceTimer = null;
+      document.querySelectorAll(".form-content input, .form-content select").forEach(input => {
+        input.addEventListener("input", () => {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(runContainerCalculation, 250);
+        });
+      });
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          $(btn.dataset.tab).classList.add("active");
+
+          if (btn.dataset.tab === "tabContainer") {
+            onWindowResize();
+          } else if (btn.dataset.tab === "tabCarton") {
+            calculateCartonPackaging();
+          }
+        });
+      });
+
+      document.querySelectorAll("#tabCarton input").forEach(input => {
+        input.addEventListener("input", calculateCartonPackaging);
+      });
+
+      $("presetSelector").addEventListener("change", (e) => {
+        const selected = e.target.value;
+        if (selected.startsWith("custom:")) {
+          const template = customTemplates.find(item => item.id === selected.slice(7));
+          if (template) applyFormState(template.state);
+          return;
+        }
+        const preset = PRESETS[selected];
+        if (preset) applyFormState(preset);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      init3DScene();
+      renderAccessoryCargoInputs([{name:"", length:"", width:"", height:"", quantity:0, gross:0}]);
+      renderCustomTemplateOptions();
+      renderCustomTemplateList();
+      syncAppearanceControls();
+      applyBrandAppearance(false);
+      updateContainerBrief();
+      setupEventListeners();
+      runContainerCalculation(false);
+      calculateCartonPackaging();
+    });
+  </script>
+</body>
+</html>
