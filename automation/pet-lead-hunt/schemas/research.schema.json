@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["leads"],
+  "properties": {
+    "leads": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["company", "country", "market_region", "product_family", "customer_type", "website", "summary", "fit_reason", "identity_status", "facts", "inferences", "unknowns", "contacts", "sources", "search_queries", "buying_signal", "exclusion_reason"],
+        "properties": {
+          "company": { "type": "string" },
+          "country": { "type": "string" },
+          "market_region": { "type": "string" },
+          "product_family": { "type": "string" },
+          "customer_type": { "type": "string" },
+          "website": { "type": "string" },
+          "summary": { "type": "string" },
+          "fit_reason": { "type": "string" },
+          "identity_status": { "type": "string", "enum": ["已验证", "部分验证", "未知", "访问受限"] },
+          "facts": { "type": "array", "items": { "type": "string" } },
+          "inferences": { "type": "array", "items": { "type": "string" } },
+          "unknowns": { "type": "array", "items": { "type": "string" } },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "role", "role_status", "email", "email_status", "phone", "whatsapp", "whatsapp_status", "linkedin", "official_business_route", "evidence_url"],
+              "properties": {
+                "name": { "type": "string" },
+                "role": { "type": "string" },
+                "role_status": { "type": "string", "enum": ["已验证", "部分验证", "未知", "访问受限"] },
+                "email": { "type": "string" },
+                "email_status": { "type": "string", "enum": ["已验证", "部分验证", "未验证", "未知", "访问受限"] },
+                "phone": { "type": "string" },
+                "whatsapp": { "type": "string" },
+                "whatsapp_status": { "type": "string", "enum": ["已验证", "部分验证", "未验证", "未知", "访问受限"] },
+                "linkedin": { "type": "string" },
+                "official_business_route": { "type": "string" },
+                "evidence_url": { "type": "string" }
+              }
+            }
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["title", "url", "source_type", "checked_at", "supports"],
+              "properties": {
+                "title": { "type": "string" },
+                "url": { "type": "string" },
+                "source_type": { "type": "string" },
+                "checked_at": { "type": "string" },
+                "supports": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "search_queries": { "type": "array", "items": { "type": "string" } },
+          "buying_signal": { "type": "string" },
+          "exclusion_reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

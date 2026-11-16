@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "name": "pet-b2b-lead-hunt",
+  "display_name": "宠物 B2B 获客",
+  "local_only": true,
+  "executor_model": "gpt-6.1-sol",
+  "executor_model_label": "GPT-6.1 Sol",
+  "executor_reasoning_effort": "medium",
+  "executor_reasoning_effort_label": "中",
+  "executor_stage_timeout_minutes": 30,
+  "default_limit": 10,
+  "maximum_limit": 10,
+  "markets": [
+    { "id": "us", "label": "美国" },
+    { "id": "germany", "label": "德国" },
+    { "id": "uk", "label": "英国" },
+    { "id": "europe_other", "label": "其他欧洲" },
+    { "id": "australia", "label": "澳大利亚" },
+    { "id": "canada", "label": "加拿大" },
+    { "id": "japan", "label": "日本" },
+    { "id": "middle_east", "label": "中东" },
+    { "id": "southeast_asia", "label": "东南亚" }
+  ],
+  "product_families": [
+    {
+      "id": "smart_devices",
+      "label": "宠物智能设备",
+      "examples": ["自动喂食器", "智能猫砂盆", "AI 智能项圈", "智能玩具", "智能健康宠物窝"],
+      "buyer_profile": "宠物智能硬件品牌商、智能宠物用品进口商/分销商、明确经营互联或电子宠物产品的零售与电商采购方。",
+      "fit_signals": ["公开产品目录展示智能/互联/电子宠物设备", "公开品牌合作或新品采购渠道", "渠道覆盖与产品定位适合智能宠物用品"],
+      "product_fit_anchors": ["0-5：仅证明是宠物企业，没有智能设备品类证据", "6-10：有相邻电子宠物产品或明确的科技类采购渠道", "11-15：已有直接匹配的智能设备品类、品牌合作或分销证据"]
+    },
+    {
+      "id": "pet_supplies",
+      "label": "宠物用品",
+      "examples": ["按买家渠道和目标市场核实具体品类"],
+      "buyer_profile": "宠物用品品牌商、进口商、批发分销商、连锁零售与电商采购方；按具体用品细分匹配，不因公司规模或宠物行业身份自动判高匹配。",
+      "fit_signals": ["官网目录公开列出匹配的用品细分品类", "公开说明批发、进口、供应商合作或采购渠道", "产品组合和销售渠道与目标用品的买家相符"],
+      "product_fit_anchors": ["0-5：只确认宠物行业身份，没有目标用品匹配证据", "6-10：有相邻用品目录或适配的渠道证据", "11-15：目标用品直接出现在产品组合/批发目录，且客户类型与渠道相符"]
+    },
+    {
+      "id": "pet_food",
+      "label": "宠物食品",
+      "examples": ["成分、标签和进口合规按目标市场单独核验"],
+      "buyer_profile": "宠物食品品牌、进口商、食品批发分销商、连锁零售与电商食品采购方；需确认食品业务与目标市场，不将一般用品零售自动视为食品买家。",
+      "fit_signals": ["官网目录或企业资料明确展示宠物食品业务", "公开出现食品品牌代理、进口或批发业务", "政府/监管机构公开资料可核验目标市场的食品规则"],
+      "product_fit_anchors": ["0-5：仅有宠物行业身份，没有食品业务证据", "6-10：有食品零售目录，但进口/批发角色未确认", "11-15：明确经营宠物食品进口、品牌或批发，并有目标市场渠道证据"],
+      "compliance_policy": "逐市场核验食品、成分、标签、注册/进口要求；资料或官方来源不足时，在 unknowns 中写明未知，不推断合规或准入状态。"
+    }
+  ],
+  "data_sources": ["公开网页", "找客户项目已有宠物线索文件"],
+  "excluded_sources": ["未接入的 Google Maps 专用 API", "未接入的海关/贸易数据库", "登录墙或付费墙后的个人数据"],
+  "stages": [
+    { "id": "hq_intake", "label": "HQ 路由与分派" },
+    { "id": "preflight", "label": "本地名单预检" },
+    { "id": "research", "label": "E03 企业与买家核验" },
+    { "id": "dedupe", "label": "现有名单去重" },
+    { "id": "score", "label": "E08 证据评分" },
+    { "id": "draft", "label": "E05 个性化草稿" },
+    { "id": "archive", "label": "E09 CRM-ready 归档" }
+  ],
+  "guardrails": {
+    "send_messages": false,
+    "write_customer_archive": false,
+    "create_formal_quotation": false,
+    "dedupe_existing_files": true,
+    "require_source_urls": true,
+    "allow_fewer_than_limit": true
+  }
+}

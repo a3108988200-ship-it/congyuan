@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["drafts"],
+  "properties": {
+    "drafts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lead_id", "eligibility", "channel", "subject", "body", "chinese_purpose", "product_summary", "reason"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "eligibility": { "type": "string", "enum": ["可准备草稿", "仅可请求转接", "无合适渠道"] },
+          "channel": { "type": "string", "enum": ["email", "official_route", "linkedin", "whatsapp", "none"] },
+          "subject": { "type": "string" },
+          "body": { "type": "string" },
+          "chinese_purpose": { "type": "string" },
+          "product_summary": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

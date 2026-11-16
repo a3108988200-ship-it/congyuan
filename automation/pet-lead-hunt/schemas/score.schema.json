@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scores"],
+  "properties": {
+    "scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lead_id", "dimension_scores", "total_score", "tier", "confidence", "big_fish", "product_family_fit_basis", "reason", "risk_flags", "next_action"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "dimension_scores": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["product_fit", "purchasing_capacity", "demand_clarity", "decision_access", "urgency", "authenticity", "strategic_value", "margin_payment", "engagement", "channel_validity"],
+            "properties": {
+              "product_fit": { "type": "integer", "minimum": 0, "maximum": 15 },
+              "purchasing_capacity": { "type": "integer", "minimum": 0, "maximum": 15 },
+              "demand_clarity": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "decision_access": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "urgency": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "authenticity": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "strategic_value": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "margin_payment": { "type": "integer", "minimum": 0, "maximum": 10 },
+              "engagement": { "type": "integer", "minimum": 0, "maximum": 5 },
+              "channel_validity": { "type": "integer", "minimum": 0, "maximum": 5 }
+            }
+          },
+          "total_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "tier": { "type": "string", "enum": ["S", "A", "B", "C"] },
+          "confidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "big_fish": { "type": "string", "enum": ["High", "Medium", "Low"] },
+          "product_family_fit_basis": { "type": "string" },
+          "reason": { "type": "string" },
+          "risk_flags": { "type": "array", "items": { "type": "string" } },
+          "next_action": { "type": "string" }
+        }
+      }
+    }
+  }
+}

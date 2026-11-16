@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["records"],
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lead_id", "customer_type", "stage", "owner", "next_action", "next_due_at", "evidence_summary", "import_status"],
+        "properties": {
+          "lead_id": { "type": "string" },
+          "customer_type": { "type": "string" },
+          "stage": { "type": "string", "enum": ["prospecting_review"] },
+          "owner": { "type": "string" },
+          "next_action": { "type": "string" },
+          "next_due_at": { "type": "string" },
+          "evidence_summary": { "type": "string" },
+          "import_status": { "type": "string", "enum": ["本地待审核"] }
+        }
+      }
+    }
+  }
+}

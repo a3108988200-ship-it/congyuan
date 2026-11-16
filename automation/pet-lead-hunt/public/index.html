@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ee">
+  <title>宠物 B2B 获客 · 本机看板</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="Prosper 销售控制台">
+        <span class="brand-mark">P</span>
+        <span><strong>PROSPER</strong><small>SALES OPERATIONS</small></span>
+      </a>
+      <div class="side-label">工作台</div>
+      <nav class="side-nav" aria-label="主导航">
+        <a class="nav-link active" href="#top"><span class="nav-icon">◫</span>获客看板<span class="nav-active-dot"></span></a>
+        <a class="nav-link" href="#leads"><span class="nav-icon">⌕</span>潜客审核池<span id="navLeadCount" class="nav-count">0</span></a>
+        <a class="nav-link" href="#workflow"><span class="nav-icon">⤳</span>流程编排</a>
+      </nav>
+      <div class="sidebar-divider"></div>
+      <div class="side-label">试点配置</div>
+      <div class="sidebar-note">
+        <div class="note-title"><span class="pulse-dot"></span>宠物 B2B 获客</div>
+        <p>公开来源研究<br>最多 10 家 · 本地复核</p>
+        <div class="note-meta"><span>运行方式</span><b>手动启动</b></div>
+        <div class="note-meta"><span>执行位置</span><b>仅本机</b></div>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="privacy-mark">⌑</div>
+        <div><strong>本地运行空间</strong><span>不发送 · 不自动导入 CRM</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="top">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>销售中心</span><b>/</b><strong>新客开发</strong></div>
+        <div class="topbar-right">
+          <span class="local-pill"><i></i> LOCAL WORKSPACE</span>
+          <span class="user-avatar">C</span>
+          <span class="user-name">Conrad</span>
+        </div>
+      </header>
+
+      <section class="hero-grid">
+        <div class="hero-card">
+          <div class="hero-topline"><span class="eyebrow"><i class="live-dot"></i>手动获客试点</span><span class="hero-ref">PET LEAD HUNT <b>01</b></span></div>
+          <div class="hero-body">
+            <div>
+              <div class="hero-overline">从公开证据，到可复核的下一步</div>
+              <h1>找到值得联系的<br><em>宠物行业买家</em></h1>
+              <p>研究全球目标市场，核验企业与联系渠道，整理个性化开发草稿。</p>
+              <div class="hero-tags"><span>智能设备</span><span>宠物用品</span><span>宠物食品</span><span class="tag-limit">≤ 10 家 / 轮</span></div>
+            </div>
+            <div class="hero-illustration" aria-hidden="true">
+              <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+              <div class="planet">✳</div><span class="orbit-label label-one">EVIDENCE</span><span class="orbit-label label-two">BUYER FIT</span>
+              <span class="spark spark-one">✦</span><span class="spark spark-two">·</span><span class="spark spark-three">✧</span>
+            </div>
+          </div>
+          <div class="hero-footer">
+            <div class="hero-status"><span class="status-icon">◷</span><span><b id="heroRunLabel">等待启动</b><small id="heroRunSub">先预览本轮将执行的步骤</small></span></div>
+            <button class="primary-button" id="startRun"><span>开始一轮研究</span><b>↗</b></button>
+          </div>
+          <div class="hero-progress"><span id="heroProgressBar"></span></div>
+        </div>
+
+        <aside class="markets-card">
+          <div class="card-heading"><div><span class="section-kicker">MARKET COVERAGE</span><h2>目标市场 <span>·</span> 9 区</h2></div><span class="round-icon">◎</span></div>
+          <p class="markets-intro">按重点市场去重覆盖，按买家匹配度寻找，不为凑数降低筛选标准。</p>
+          <div id="marketList" class="market-list">
+            <div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div>
+          </div>
+          <div class="market-footer"><span class="mini-dot"></span>其他欧洲不重复计算英国与德国</div>
+        </aside>
+      </section>
+
+      <section class="workflow-section" id="workflow">
+        <div class="section-header">
+          <div><span class="section-kicker">HUMAN-REVIEWED AUTOMATION</span><h2>从研究到审核，逐步留证</h2></div>
+          <span class="flow-caption"><span></span>自动执行顺序</span>
+        </div>
+        <div class="workflow-track" id="workflowTrack">
+          <div class="workflow-card" data-stage="hq_intake"><div class="step-icon clock-icon">⌘</div><span class="step-number">STEP 01</span><strong>HQ 路由</strong><small>分派至外贸销售中心</small><span class="step-agent">HQ · ROUTE</span></div>
+          <div class="workflow-card" data-stage="preflight"><div class="step-icon">◷</div><span class="step-number">STEP 02</span><strong>名单预检</strong><small>本地线索去重键</small><span class="step-agent">LOCAL</span></div>
+          <div class="workflow-card" data-stage="research"><div class="step-icon">⌕</div><span class="step-number">STEP 03</span><strong>公开研究</strong><small>企业 · 品类 · 联系入口</small><span class="step-agent">E03 · RESEARCH</span></div>
+          <div class="workflow-card" data-stage="dedupe"><div class="step-icon">⊕</div><span class="step-number">STEP 04</span><strong>名单去重</strong><small>按公司名与官网域名</small><span class="step-agent">LOCAL</span></div>
+          <div class="workflow-card" data-stage="score"><div class="step-icon">◇</div><span class="step-number">STEP 05</span><strong>证据评分</strong><small>买家匹配度与风险</small><span class="step-agent">E08 · SCORE</span></div>
+          <div class="workflow-card" data-stage="draft"><div class="step-icon">✉</div><span class="step-number">STEP 06</span><strong>开发草稿</strong><small>个性化 · 非报价摘要</small><span class="step-agent">E05 · DRAFT</span></div>
+          <div class="workflow-card" data-stage="archive"><div class="step-icon">▤</div><span class="step-number">STEP 07</span><strong>审核归档</strong><small>CRM-ready · 本地待审</small><span class="step-agent">E09 · REVIEW</span></div>
+        </div>
+        <div class="workflow-legend"><span><i class="legend-check"></i>每家公司都保留来源与核验日期</span><span><i class="legend-shield">✓</i>草稿待审 · 不自动发送或导入</span><button class="text-button" id="showRules">查看运行边界 ↗</button></div>
+      </section>
+
+      <section class="leads-section" id="leads">
+        <div class="section-header leads-title-row">
+          <div><span class="section-kicker">LOCAL REVIEW POOL</span><h2>潜客审核池 <span id="resultCount" class="title-count">0</span></h2></div>
+          <div class="export-actions"><button class="outline-button" id="exportCsv" disabled>↓ <span>CSV</span></button><button class="outline-button" id="exportXlsx" disabled>↓ <span>Excel</span></button></div>
+        </div>
+        <div class="filter-row">
+          <div class="filter-tabs" id="familyFilters"><button class="filter-tab active" data-family="all">全部品类</button><button class="filter-tab" data-family="宠物智能设备">智能设备</button><button class="filter-tab" data-family="宠物用品">宠物用品</button><button class="filter-tab" data-family="宠物食品">宠物食品</button></div>
+          <div class="filter-right"><span id="runDateLabel">尚无运行记录</span><button class="icon-button" id="refreshRuns" title="刷新运行记录" aria-label="刷新运行记录">↻</button></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>公司 / 官网</th><th>市场</th><th>匹配品类</th><th>联系人状态</th><th>证据评分</th><th>下一步</th><th></th></tr></thead>
+            <tbody id="leadTableBody"><tr><td colspan="7"><div class="empty-state"><span class="empty-orbit">⌕</span><strong>潜客审核池目前为空</strong><p>启动一轮本地研究后，候选公司、来源证据和草稿会显示在这里。</p><button class="empty-action" id="emptyStart">预览并启动第一轮 <span>→</span></button></div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="results-footer"><span><b id="footerResultCount">0</b> 条候选 · 按评分排序</span><span>首轮样本用于验证流程，不代表市场规模或区域优劣</span></div>
+      </section>
+      <footer class="page-footer"><span>PROSPER PET · BUSINESS DEVELOPMENT</span><span>仅公开来源研究 · 联系与导入由你复核确认</span></footer>
+    </main>
+
+    <aside class="detail-panel" id="detailPanel" aria-live="polite">
+      <div class="detail-head"><span class="section-kicker">RUN ACTIVITY</span><button class="icon-button" id="hideDetail" title="收起详情">×</button></div>
+      <div id="detailContent" class="detail-content">
+        <div class="detail-placeholder"><div class="placeholder-ring">✦</div><strong>运行与客户证据</strong><p>每一步的状态、来源、联系人核验和阻塞原因都会显示在这里。</p></div>
+        <div class="activity-empty"><span class="activity-icon">⌁</span><span><b>准备就绪</b><small>本地任务记录等待开始</small></span><i class="activity-state">READY</i></div>
+        <div class="guardrail-card"><span>安全边界</span><ul><li>不会自动发送邮件或 WhatsApp</li><li>不会直接写入客户档案</li><li>没有规格与成本依据不报价</li></ul></div>
+      </div>
+    </aside>
+  </div>
+
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-icon">↗</div><button class="dialog-close" value="cancel" aria-label="关闭">×</button>
+      <span class="section-kicker">LOCAL RESEARCH PREVIEW</span><h2>准备启动本地研究</h2>
+      <p class="dialog-intro">本轮将按当前试点范围运行 7 个执行步骤。预览内容如下：</p>
+      <div id="previewDetails" class="preview-details"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
+      <div class="dialog-boundary"><span>✓</span><p><b>只做本地研究与草稿</b><br>不发送消息、不提交表单、不导入 CRM、不生成正式报价。</p></div>
+      <div class="dialog-actions"><button class="outline-button" value="cancel">返回看板</button><button class="primary-button" id="confirmRun" type="button"><span>确认启动本轮</span><b>→</b></button></div>
+      <small class="dialog-footnote">Codex CLI 与本机获客 Skill 需可用；研究结果会如实保留证据缺口。</small>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

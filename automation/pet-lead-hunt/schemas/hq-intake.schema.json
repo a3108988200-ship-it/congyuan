@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["route", "department", "department_manager", "primary_employee", "employee_sequence", "task_summary", "risk_flags", "assumptions", "external_actions_authorized", "customer_archive_write_authorized", "formal_quote_authorized"],
+  "properties": {
+    "route": { "type": "string", "enum": ["buyer_background"] },
+    "department": { "type": "string", "enum": ["sales-center"] },
+    "department_manager": { "type": "string", "enum": ["sales-center-main"] },
+    "primary_employee": { "type": "string", "enum": ["e03-buyer-researcher"] },
+    "employee_sequence": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "string", "enum": ["e03-buyer-researcher", "e08-customer-grader", "e05-outreach-writer", "e09-crm-archivist"] }
+    },
+    "task_summary": { "type": "string" },
+    "risk_flags": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "external_actions_authorized": { "type": "boolean", "enum": [false] },
+    "customer_archive_write_authorized": { "type": "boolean", "enum": [false] },
+    "formal_quote_authorized": { "type": "boolean", "enum": [false] }
+  }
+}
