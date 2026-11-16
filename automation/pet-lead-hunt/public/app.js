@@ -16,16 +16,9 @@ function showToast(message) {
   clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 2800);
 }
 
-function familyBucket(value) {
-  const text = String(value || "").toLowerCase();
-  if (/(food|食品|粮|零食|营养)/.test(text)) return "pet_food";
-  if (/(suppl|用品|牵引|窝垫|清洁|服饰)/.test(text)) return "pet_supplies";
-  return "smart_devices";
-}
-
 function renderMarkets() {
   const el = $("#marketList");
-  el.innerHTML = (state.config?.markets || []).map((market, index) => `<div class="market-chip"><i>${String(index + 1).padStart(2, "0")}</i>${escapeHtml(market.label)}<b class="market-check"></b></div>`).join("");
+  el.innerHTML = (state.activeRun?.markets?.map((label) => ({ label })) || state.config?.markets || []).map((market, index) => `<div class="market-chip"><i>${String(index + 1).padStart(2, "0")}</i>${escapeHtml(market.label)}<b class="market-check"></b></div>`).join("");
 }
 
 function runStatusLabel(run) {
@@ -77,8 +70,7 @@ function renderLeadDetail(lead) {
 }
 
 function leadFamilyClass(lead) {
-  const bucket = familyBucket(lead.product_family);
-  return bucket === "pet_food" ? "food" : bucket === "pet_supplies" ? "supplies" : "devices";
+  return ({ "宠物食品": "food", "宠物用品": "supplies" })[lead.product_family] || "devices";
 }
 
 function hasVerifiedPerson(lead) {
@@ -87,7 +79,10 @@ function hasVerifiedPerson(lead) {
 
 function renderLeads(run) {
   const all = run?.leads || [];
-  const filtered = state.family === "all" ? all : all.filter((lead) => familyBucket(lead.product_family) === state.family);
+  const families = [...new Set((run?.product_families || []).concat(all.map((lead) => lead.product_family)))].filter(Boolean);
+  if (!families.includes(state.family)) state.family = "all";
+  $("#familyFilters").innerHTML = ["all", ...families].map((family) => `<button class="filter-tab ${state.family === family ? "active" : ""}" data-family="${escapeHtml(family)}">${family === "all" ? "全部品类" : escapeHtml(family)}</button>`).join("");
+  const filtered = state.family === "all" ? all : all.filter((lead) => lead.product_family === state.family);
   $("#resultCount").textContent = String(filtered.length);
   $("#footerResultCount").textContent = String(filtered.length);
   $("#navLeadCount").textContent = String(all.length);
@@ -120,13 +115,14 @@ function renderLeads(run) {
 
 function renderDashboard() {
   const run = state.activeRun;
-  renderWorkflow(run); renderLeads(run);
+  $("#runSelect").innerHTML = state.runs.map((item) => `<option value="${escapeHtml(item.id)}" ${item.id === run?.id ? "selected" : ""}>${escapeHtml(prettyTime(item.created_at))} · ${escapeHtml(item.target?.product || "宠物试跑")}</option>`).join("");
+  renderMarkets(); renderWorkflow(run); renderLeads(run);
   const selectedLead = run?.leads?.find((lead) => lead.lead_id === state.selectedLead);
   if (selectedLead) renderLeadDetail(selectedLead); else renderRunActivity(run);
   $("#heroRunLabel").textContent = run ? runStatusLabel(run) : "等待启动";
   $("#heroRunSub").textContent = run ? `${prettyTime(run.updated_at || run.created_at)} · ${run.leads?.length || 0} 家候选` : "先预览本轮将执行的步骤";
   $("#heroProgressBar").style.width = `${Math.max(0, Math.min(100, Number(run?.progress || 0)))}%`;
-  $("#startRun").disabled = state.busy || isRunning(run);
+  $("#startRun").disabled = state.busy || state.runs.some(isRunning);
   $("#startRun").innerHTML = state.busy ? "正在准备…" : isRunning(run) ? "研究进行中" : `<span>${run ? "再跑一轮研究" : "开始一轮研究"}</span><b>↗</b>`;
 }
 
@@ -139,32 +135,83 @@ async function loadRuns({ preserveSelection = false } = {}) {
   } catch (error) { showToast(error.message); }
 }
 
-async function openPreview() {
-  if (state.busy || isRunning(state.activeRun)) return;
-  state.busy = true; renderDashboard();
-  try {
-    const preview = await api("/api/runs/preview", { method: "POST", body: JSON.stringify({}) });
-    const rows = [
-      ["市场覆盖", `${preview.markets.length} 个区域 · ${preview.markets.map((market) => market.label).join("、")}`],
-      ["产品范围", `${preview.product_families.length} 个品类 · ${preview.product_families.map((family) => family.label).join("、")}`],
-      ["候选上限", `${preview.limit} 家，按证据与匹配度排序`],
-      ["执行模型", preview.model_label || preview.model || "未配置"],
-      ["推理强度", preview.reasoning_effort_label || preview.reasoning_effort || "未配置"],
-      ["单阶段上限", `${preview.stage_timeout_minutes || 30} 分钟`],
-      ["研究来源", preview.data_sources.join("、")],
-      ["执行步骤", "HQ 销售中心分派 → 本地名单预检 → E03 公开研究 → 去重 → E08 评分 → E05 草稿 → E09 待审归档"]
-    ];
-    $("#previewDetails").innerHTML = rows.map(([label, value]) => `<div class="preview-row"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join("");
-    $("#confirmDialog").showModal();
-  } catch (error) { showToast(error.message); }
-  finally { state.busy = false; renderDashboard(); }
+const presets = {
+  shoes: { products: ["厨师防滑工作鞋", "后厨防水工作鞋", "餐饮工作木屐"], buyers: ["餐饮工作鞋批发商", "厨师制服供应商", "劳保鞋进口商"] },
+  bags: { products: ["旅行硬壳拉杆箱", "通勤电脑背包", "礼赠品托特包"], buyers: ["旅行用品进口商", "箱包自有品牌商", "礼赠品经销商"] },
+  pets: { products: ["智能猫砂盆", "自动宠物喂食器", "犬用胸背牵引套装", "宠物食品"], buyers: ["宠物用品进口商", "宠物品牌商", "宠物渠道批发分销商"] },
+  custom: { products: [], buyers: ["自有品牌采购商", "专业进口商或批发商", "连锁零售采购商"] }
+};
+const wizard = { step: 0, preset: "custom", target: {}, preview: null };
+
+function openPreview() {
+  if (state.busy || state.runs.some(isRunning)) return;
+  Object.assign(wizard, { step: 0, preset: "custom", target: {}, preview: null });
+  renderWizard();
+  $("#confirmDialog").showModal();
+}
+
+function optionButtons(items, key) {
+  return items.map((value) => `<button type="button" class="outline-button" data-choice="${key}" data-value="${escapeHtml(value)}">${escapeHtml(value)}</button>`).join("");
+}
+
+function renderWizard() {
+  const { step, target, preset, preview } = wizard;
+  const fields = ["product", "market", "buyer"];
+  const labels = ["细分产品", "优先市场", "优先买家"];
+  const guidance = ["选择预设或输入具体产品。加上用途、材质或规格，有助于缩小范围。", "先选一个国家或区域。也可以填写列表以外的市场。", "优先选一种有采购能力的企业。可以填写细分渠道或商业模式。"];
+  $("#confirmDialog h2").textContent = step < 3 ? `${step + 1} / 4 · ${labels[step]}` : "4 / 4 · 确认研究条件";
+  $(".dialog-intro").textContent = step < 3 ? guidance[step] : "确认范围后，系统会搜寻候选、核验证据、去重评分并生成待审草稿。";
+  $("#wizardBack").textContent = step ? "上一步" : "返回看板";
+  $("#confirmRun").textContent = step < 3 ? "下一步 →" : "确认启动本轮 →";
+  const product = target.product || "";
+  let buyers = presets[preset].buyers;
+  if (/礼赠|托特/.test(product)) buyers = ["企业礼赠品经销商", "促销品进口商", "定制帆布袋品牌商"];
+  else if (/电脑包|电脑背包/.test(product)) buyers = ["数码配件渠道分销商", "通勤背包自有品牌商", "办公用品批发商"];
+  const options = [presets[preset].products, (state.config?.markets || []).map((item) => item.label), buyers];
+  if (step < 3) {
+    const key = fields[step];
+    const groups = step === 0 ? `<div class="wizard-choices">${Object.entries({ shoes: "厨师鞋", bags: "箱包", pets: "宠物", custom: "自定义" }).map(([id, label]) => `<button type="button" aria-pressed="${id === preset}" class="outline-button" data-preset="${id}">${label}</button>`).join("")}</div>` : "";
+    $("#previewDetails").innerHTML = `${groups}<div class="wizard-choices">${optionButtons(options[step], key)}</div><label class="wizard-field">${labels[step]}<input id="wizardValue" maxlength="${[120, 100, 160][step]}" value="${escapeHtml(target[key] || "")}" autocomplete="off"></label>${step === 2 ? `<label class="wizard-field">补充条件（选填）<textarea id="wizardNotes" maxlength="350" placeholder="例如优先自有品牌、排除只做零售的门店">${escapeHtml(target.notes || "")}</textarea></label>` : ""}`;
+    return;
+  }
+  const rows = [["产品", target.product], ["市场", target.market], ["买家画像", target.buyer], ["补充条件", target.notes || "无"], ["筛选依据", "目标品类目录、买家角色、目标市场渠道和可核验的业务入口"], ["候选上限", `${preview.limit} 家`], ["执行模型", preview.model_label]];
+  $("#previewDetails").innerHTML = rows.map(([label, value]) => `<div class="preview-row"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join("");
+}
+
+function saveWizardField() {
+  const key = ["product", "market", "buyer"][wizard.step];
+  if (key) wizard.target[key] = $("#wizardValue").value.trim();
+  if (wizard.step === 2) wizard.target.notes = $("#wizardNotes").value.trim();
+}
+
+async function advanceWizard() {
+  if (state.busy) return;
+  if (wizard.step === 3) return startRun();
+  saveWizardField();
+  if (!$("#wizardValue").value.trim()) { showToast("请先填写本步条件"); $("#wizardValue").focus(); return; }
+  if (wizard.step === 2) {
+    state.busy = true;
+    $("#confirmRun").disabled = true;
+    try {
+      wizard.preview = await api("/api/runs/preview", { method: "POST", body: JSON.stringify({ target: wizard.target }) });
+      wizard.target = wizard.preview.target;
+    } catch (error) {
+      showToast(error.message);
+      return;
+    } finally {
+      state.busy = false;
+      $("#confirmRun").disabled = false;
+    }
+  }
+  wizard.step++;
+  renderWizard();
 }
 
 async function startRun() {
   if (state.busy) return;
   state.busy = true; $("#confirmRun").disabled = true; $("#confirmRun").innerHTML = "正在创建任务…";
   try {
-    const data = await api("/api/runs", { method: "POST", body: JSON.stringify({ confirmLocalRun: true }) });
+    const data = await api("/api/runs", { method: "POST", body: JSON.stringify({ confirmLocalRun: true, target: wizard.target }) });
     $("#confirmDialog").close(); state.selectedLead = null; showToast(`已创建本机任务 ${data.run_id}`);
     await loadRuns();
   } catch (error) { showToast(error.message); }
@@ -186,17 +233,48 @@ async function init() {
   catch (error) { showToast(error.message); }
   $("#startRun").addEventListener("click", openPreview);
   $("#emptyStart").addEventListener("click", openPreview);
-  $("#confirmRun").addEventListener("click", startRun);
+  $("#confirmRun").addEventListener("click", advanceWizard);
+  $("#confirmDialog form").addEventListener("submit", (event) => {
+    if (event.submitter?.value === "cancel") return;
+    event.preventDefault();
+    advanceWizard();
+  });
+  $("#wizardBack").addEventListener("click", () => {
+    if (state.busy) return;
+    if (!wizard.step) return $("#confirmDialog").close();
+    saveWizardField();
+    wizard.step--;
+    renderWizard();
+  });
+  $("#previewDetails").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (button.dataset.preset) {
+      wizard.preset = button.dataset.preset;
+      wizard.target.product = "";
+      wizard.target.buyer = "";
+      renderWizard();
+    } else if (button.dataset.choice) {
+      $("#wizardValue").value = button.dataset.value;
+    }
+  });
+  $("#runSelect").addEventListener("change", (event) => {
+    state.activeRun = state.runs.find((run) => run.id === event.target.value);
+    state.selectedLead = null;
+    state.family = "all";
+    renderDashboard();
+  });
   $("#refreshRuns").addEventListener("click", () => loadRuns({ preserveSelection: true }));
   $("#exportCsv").addEventListener("click", () => triggerExport("csv"));
   $("#exportXlsx").addEventListener("click", () => triggerExport("xlsx"));
   $("#showRules").addEventListener("click", showRules);
   $("#hideDetail").addEventListener("click", () => renderRunActivity(state.activeRun));
-  document.querySelectorAll(".filter-tab").forEach((button) => button.addEventListener("click", () => {
-    document.querySelectorAll(".filter-tab").forEach((item) => item.classList.toggle("active", item === button));
-    state.family = button.dataset.family === "all" ? "all" : button.dataset.family === "宠物智能设备" ? "smart_devices" : button.dataset.family === "宠物用品" ? "pet_supplies" : "pet_food";
+  $("#familyFilters").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-family]");
+    if (!button) return;
+    state.family = button.dataset.family;
     renderLeads(state.activeRun);
-  }));
+  });
   await loadRuns();
   window.setInterval(() => loadRuns({ preserveSelection: true }), 3500);
 }

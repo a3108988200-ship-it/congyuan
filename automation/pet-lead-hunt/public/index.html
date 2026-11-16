@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f4ee">
-  <title>宠物 B2B 获客 · 本机看板</title>
+  <title>B2B 获客 · 本机看板</title>
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
@@ -24,7 +24,7 @@
       <div class="sidebar-divider"></div>
       <div class="side-label">试点配置</div>
       <div class="sidebar-note">
-        <div class="note-title"><span class="pulse-dot"></span>宠物 B2B 获客</div>
+        <div class="note-title"><span class="pulse-dot"></span>B2B 获客</div>
         <p>公开来源研究<br>最多 10 家 · 本地复核</p>
         <div class="note-meta"><span>运行方式</span><b>手动启动</b></div>
         <div class="note-meta"><span>执行位置</span><b>仅本机</b></div>
@@ -47,13 +47,13 @@
 
       <section class="hero-grid">
         <div class="hero-card">
-          <div class="hero-topline"><span class="eyebrow"><i class="live-dot"></i>手动获客试点</span><span class="hero-ref">PET LEAD HUNT <b>01</b></span></div>
+          <div class="hero-topline"><span class="eyebrow"><i class="live-dot"></i>手动获客试点</span><span class="hero-ref">B2B LEAD HUNT <b>01</b></span></div>
           <div class="hero-body">
             <div>
               <div class="hero-overline">从公开证据，到可复核的下一步</div>
-              <h1>找到值得联系的<br><em>宠物行业买家</em></h1>
+              <h1>找到值得联系的<br><em>目标行业买家</em></h1>
               <p>研究全球目标市场，核验企业与联系渠道，整理个性化开发草稿。</p>
-              <div class="hero-tags"><span>智能设备</span><span>宠物用品</span><span>宠物食品</span><span class="tag-limit">≤ 10 家 / 轮</span></div>
+              <div class="hero-tags"><span>产品</span><span>市场</span><span>买家画像</span><span class="tag-limit">≤ 10 家 / 轮</span></div>
             </div>
             <div class="hero-illustration" aria-hidden="true">
               <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
@@ -69,7 +69,7 @@
         </div>
 
         <aside class="markets-card">
-          <div class="card-heading"><div><span class="section-kicker">MARKET COVERAGE</span><h2>目标市场 <span>·</span> 9 区</h2></div><span class="round-icon">◎</span></div>
+          <div class="card-heading"><div><span class="section-kicker">MARKET COVERAGE</span><h2>目标市场</h2></div><span class="round-icon">◎</span></div>
           <p class="markets-intro">按重点市场去重覆盖，按买家匹配度寻找，不为凑数降低筛选标准。</p>
           <div id="marketList" class="market-list">
             <div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div>
@@ -101,8 +101,8 @@
           <div class="export-actions"><button class="outline-button" id="exportCsv" disabled>↓ <span>CSV</span></button><button class="outline-button" id="exportXlsx" disabled>↓ <span>Excel</span></button></div>
         </div>
         <div class="filter-row">
-          <div class="filter-tabs" id="familyFilters"><button class="filter-tab active" data-family="all">全部品类</button><button class="filter-tab" data-family="宠物智能设备">智能设备</button><button class="filter-tab" data-family="宠物用品">宠物用品</button><button class="filter-tab" data-family="宠物食品">宠物食品</button></div>
-          <div class="filter-right"><span id="runDateLabel">尚无运行记录</span><button class="icon-button" id="refreshRuns" title="刷新运行记录" aria-label="刷新运行记录">↻</button></div>
+          <div class="filter-tabs" id="familyFilters"></div>
+          <div class="filter-right"><label class="run-selector">运行记录 <select id="runSelect" aria-label="选择运行记录"></select></label><span id="runDateLabel">尚无运行记录</span><button class="icon-button" id="refreshRuns" title="刷新运行记录" aria-label="刷新运行记录">↻</button></div>
         </div>
         <div class="table-wrap">
           <table>
@@ -128,11 +128,11 @@
   <dialog id="confirmDialog" class="confirm-dialog">
     <form method="dialog" class="dialog-shell">
       <div class="dialog-icon">↗</div><button class="dialog-close" value="cancel" aria-label="关闭">×</button>
-      <span class="section-kicker">LOCAL RESEARCH PREVIEW</span><h2>准备启动本地研究</h2>
-      <p class="dialog-intro">本轮将按当前试点范围运行 7 个执行步骤。预览内容如下：</p>
+      <span class="section-kicker">LOCAL RESEARCH PREVIEW</span><h2>设定本轮获客目标</h2>
+      <p class="dialog-intro">按提示缩小范围，确认后开始研究。</p>
       <div id="previewDetails" class="preview-details"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
       <div class="dialog-boundary"><span>✓</span><p><b>只做本地研究与草稿</b><br>不发送消息、不提交表单、不导入 CRM、不生成正式报价。</p></div>
-      <div class="dialog-actions"><button class="outline-button" value="cancel">返回看板</button><button class="primary-button" id="confirmRun" type="button"><span>确认启动本轮</span><b>→</b></button></div>
+      <div class="dialog-actions"><button class="outline-button" id="wizardBack" type="button">返回</button><button class="primary-button" id="confirmRun" type="button"><span>确认启动本轮</span><b>→</b></button></div>
       <small class="dialog-footnote">Codex CLI 与本机获客 Skill 需可用；研究结果会如实保留证据缺口。</small>
     </form>
   </dialog>

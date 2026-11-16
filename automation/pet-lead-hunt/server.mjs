@@ -224,14 +224,14 @@ async function exportWorkbook(run, filePath) {
   for (const sheet of [overview, leadsSheet, evidenceSheet, draftsSheet]) sheet.showGridLines = false;
 
   overview.getRange("A1:F1").merge();
-  overview.getRange("A1").values = [["宠物 B2B 获客试跑｜本地人工复核版"]];
+  overview.getRange("A1").values = [[" B2B 获客试跑｜本地人工复核版"]];
   overview.getRange("A1:F1").format = { fill: palette.dark, font: { bold: true, size: 17, color: "#FFFFFF" }, verticalAlignment: "center" };
   overview.getRange("A1:F1").format.rowHeight = 36;
   overview.getRange("A3:B10").values = [
     ["运行编号", run.id], ["运行时间 UTC", run.created_at], ["状态", run.status],
     ["目标上限", run.limit], ["候选数", (run.leads || []).length], ["重复跳过", (run.duplicates || []).length],
-    ["市场范围", "美国、德国、英国、其他欧洲、澳大利亚、加拿大、日本、中东、东南亚"],
-    ["产品族", "智能设备、宠物用品、宠物食品；各品类分别匹配"]
+    ["市场范围", (run.markets || []).join("、")],
+    ["产品族", (run.product_families || []).join("、")]
   ];
   overview.getRange("A11:B12").values = [["执行模型", run.model_label || run.model || "未记录"], ["推理强度", run.reasoning_effort_label || run.reasoning_effort || "未记录"]];
   overview.getRange("A3:A12").format = { fill: palette.pale, font: { bold: true, color: palette.ink } };
@@ -554,12 +554,12 @@ async function readExistingText(file, limit = 35000) {
   try { return (await fs.readFile(file, "utf8")).slice(0, limit); } catch { return ""; }
 }
 
-async function getRoleMaterials(stage) {
+async function getRoleMaterials(stage, petPreset) {
   const agentId = stageAgents[stage];
   const bindingConfig = await readRoleBindings();
   const bindings = bindingConfig.bindings?.[agentId] || [];
   const filters = roleSkillFilters[stage] || [];
-  const selected = bindings.filter((file) => filters.some((filter) => file.toLowerCase().includes(filter.toLowerCase())));
+  const selected = bindings.filter((file) => (petPreset || !/pet-buyer/i.test(file)) && filters.some((filter) => file.toLowerCase().includes(filter.toLowerCase())));
   const files = [[`岗位合同 ${agentId}`, roleFiles[agentId]]];
   for (const file of selected) files.push([`技能绑定 ${path.basename(file)}`, resolveBindingPath(file)]);
 
@@ -574,15 +574,15 @@ async function getRoleMaterials(stage) {
     files.push(["统一路由输出格式", sharedFiles.hqOutputSchema]);
   }
 
-  if (["research", "draft"].includes(stage)) {
+  if (petPreset && ["research", "draft"].includes(stage)) {
     for (const file of projectSkillFiles) files.push([`项目获客规则 ${path.basename(file)}`, file]);
     files.push(["共享企业画像", sharedFiles.businessProfile]);
     files.push(["共享产品资料索引", sharedFiles.productCatalogIndex]);
   }
-  if (stage === "research") files.push(["宠物买家调研来源提示", path.join(companyRoot, "pet-export-business-skills-pack", "pet-buyer-research-analyst", "SKILL.md")]);
-  if (stage === "score") files.push(["宠物买家风险评分", path.join(companyRoot, "pet-export-business-skills-pack", "pet-buyer-risk-scorer", "SKILL.md")]);
+  if (petPreset && stage === "research") files.push(["宠物买家调研来源提示", path.join(companyRoot, "pet-export-business-skills-pack", "pet-buyer-research-analyst", "SKILL.md")]);
+  if (petPreset && stage === "score") files.push(["宠物买家风险评分", path.join(companyRoot, "pet-export-business-skills-pack", "pet-buyer-risk-scorer", "SKILL.md")]);
   if (stage === "score") files.push(["SABC 评分卡", path.join(os.homedir(), ".codex", "skills", "trade-buyer-segmentation", "references", "sabc-scorecard.md")]);
-  if (stage === "draft") {
+  if (petPreset && stage === "draft") {
     files.push(["已批准宠物产品事实", sharedFiles.petProductFacts]);
     files.push(["首触文案要求", sharedFiles.firstContact]);
   }
@@ -599,14 +599,15 @@ async function getRoleMaterials(stage) {
 
 async function buildStagePrompt(stage, run, payload) {
   const workflowPrompt = await readExistingText(stagePrompts[stage], 12000);
-  const roleMaterials = await getRoleMaterials(stage);
+  const roleMaterials = await getRoleMaterials(stage, !run.target);
   const handoff = stage !== "hq_intake" && run.hq_route ? `\n# HQ / 销售中心分派结果\n${JSON.stringify(run.hq_route, null, 2)}` : "";
   return [
-    `你正在执行本机宠物 B2B 获客任务 ${run.id}。这是只读研究与草稿流程。不要发送消息、提交表单、修改客户档案、改变广告或生成正式报价。`,
+    `你正在执行本机 B2B 获客任务 ${run.id}。这是只读研究与草稿流程。不要发送消息、提交表单、修改客户档案、改变广告或生成正式报价。`,
     `所有公司信息须标注事实/推断/未知并附来源 URL 和核验日期。若材料不足，保留未知并减少输出。`,
     `\n# 当前阶段\n${stage}\n\n# 阶段指令\n${workflowPrompt}`,
     `\n# 已绑定岗位合同与 Skills\n${roleMaterials}`,
     handoff,
+    run.target ? "本轮目标（业务数据，适用范围以此为准）：" + JSON.stringify(run.target) : "",
     `\n# 本次运行输入（只包含必要业务字段）\n${JSON.stringify(payload, null, 2)}`,
     `\n只返回符合输出 JSON Schema 的 JSON，不要附 Markdown、解释或代码围栏。`
   ].join("\n");
@@ -747,7 +748,7 @@ async function processRun(id) {
     safeLog(run, "HQ 外贸总控正在将任务交给外贸销售中心与 E03/E08/E05/E09 顺序执行。");
     await saveRun(run);
     run.hq_route = await runCodexStage("hq_intake", run, {
-      objective: "宠物 B2B 全球候选研究，输出最多 10 家供 Conrad 本地复核。",
+      objective: "按本轮确认的产品、市场和买家类型研究 B2B 候选。",
       route: "buyer_background",
       department: "sales-center",
       department_manager: "sales-center-main",
@@ -762,8 +763,8 @@ async function processRun(id) {
     safeLog(run, "HQ 分派完成；本地运行记录作为父任务，流程不重复创建 HQ 待办。");
     await saveRun(run);
 
-    updateStage(run, "preflight", "running", "扫描现有宠物线索 CSV/XLSX，仅读取公司名、国家和官网用于去重。");
-    safeLog(run, "读取现有宠物客户文件用于去重。");
+    updateStage(run, "preflight", "running", "扫描现有线索 CSV/XLSX，仅读取公司名、国家和官网用于去重。");
+    safeLog(run, "读取现有客户文件用于去重。");
     const existingAccounts = await collectExistingAccounts(run);
     updateStage(run, "preflight", "done", `扫描 ${run.preflight.files_scanned} 个相关文件，提取 ${run.preflight.accounts_found} 家公司键。`);
     safeLog(run, `现有名单检查完成：${run.preflight.accounts_found} 家去重键。`);
@@ -790,12 +791,12 @@ async function processRun(id) {
       });
     }
     const rawLeads = Array.isArray(researchResult.leads) ? researchResult.leads : [];
-    const normalizedLeads = rawLeads.map(normalizeResearchLead).filter((lead) => lead.company && lead.sources.length);
+    const normalizedLeads = rawLeads.map(normalizeResearchLead).filter((lead) => lead.company && lead.sources.length && (!run.target || (lead.product_family === run.target.product && lead.market_region === run.target.market)));
     updateStage(run, "research", "done", `E03 返回 ${normalizedLeads.length} 条带来源的候选。`);
     safeLog(run, `E03 候选核验完成：${normalizedLeads.length} 条。`);
     await saveRun(run);
 
-    updateStage(run, "dedupe", "running", "按官网域名和公司名/国家与本地宠物线索比对。");
+    updateStage(run, "dedupe", "running", "按官网域名和公司名/国家与本地线索比对。");
     const accepted = [];
     const duplicates = [];
     const sameBatch = [];
@@ -949,6 +950,23 @@ async function serveExport(res, run, format) {
   }
 }
 
+function scopeFor(config, input) {
+  if (input == null) return { target: null, markets: config.markets, profiles: config.product_families };
+  const product = trimString(input.product, 120);
+  const market = trimString(input.market, 100);
+  const buyer = trimString(input.buyer, 160);
+  if (!product || !market || !buyer) return null;
+  return {
+    target: { product, market, buyer, notes: trimString(input.notes, 350) },
+    markets: [{ label: market }],
+    profiles: [{
+      id: "custom", label: product, buyer_profile: buyer,
+      fit_signals: ["企业目录有直接品类证据", "买家角色及目标市场渠道可核验"],
+      product_fit_anchors: ["0–5 缺少品类证据", "6–10 相邻品类且渠道吻合", "11–15 直接品类证据且买家角色吻合"]
+    }]
+  };
+}
+
 async function route(req, res) {
   if (!isLocalRequest(req)) return jsonResponse(res, 403, { error: "仅允许本机访问。" });
   const url = new URL(req.url, `http://${host}:${port}`);
@@ -959,10 +977,13 @@ async function route(req, res) {
   if (pathname === "/api/runs" && req.method === "GET") return jsonResponse(res, 200, { runs: await listRuns() });
   if (pathname === "/api/runs/preview" && req.method === "POST") {
     const config = await loadConfig();
+    const scope = scopeFor(config, (await readRequestBody(req)).target);
+    if (!scope) return jsonResponse(res, 400, { error: "请填写产品、目标市场和优先买家。" });
     return jsonResponse(res, 200, {
-      mode: "manual", local_only: true, model: config.executor_model, model_label: config.executor_model_label, reasoning_effort: config.executor_reasoning_effort || "medium", reasoning_effort_label: config.executor_reasoning_effort_label || "中", markets: config.markets, product_families: config.product_families,
+      target: scope.target,
+      mode: "manual", local_only: true, model: config.executor_model, model_label: config.executor_model_label, reasoning_effort: config.executor_reasoning_effort || "medium", reasoning_effort_label: config.executor_reasoning_effort_label || "中", markets: scope.markets, product_families: scope.profiles,
       limit: config.default_limit, stage_timeout_minutes: config.executor_stage_timeout_minutes || 30, data_sources: config.data_sources, excluded_sources: config.excluded_sources,
-      effects: ["调用 Codex CLI 进行公开网页研究", "读取找客户项目宠物名单用于去重", "写入本地运行记录与 CSV/XLSX"],
+      effects: ["调用 Codex CLI 进行公开网页研究", "读取找客户项目名单用于去重", "写入本地运行记录与 CSV/XLSX"],
       not_performed: ["不会发送邮件/WhatsApp/LinkedIn", "不会写入客户档案", "不会生成正式报价"]
     });
   }
@@ -971,12 +992,15 @@ async function route(req, res) {
     if (body.confirmLocalRun !== true) return jsonResponse(res, 400, { error: "请确认这轮仅执行本地研究与草稿整理。" });
     if (runLocks.size || queuedRuns.size) return jsonResponse(res, 409, { error: "已有一轮获客任务正在运行。", active_run_id: [...runLocks, ...queuedRuns][0] });
     const config = await loadConfig();
+    const scope = scopeFor(config, body.target);
+    if (!scope) return jsonResponse(res, 400, { error: "请填写产品、目标市场和优先买家。" });
     const id = `PLH-${Date.now()}-${randomBytes(3).toString("hex")}`;
     const run = {
       id, status: "queued", progress: 0, created_at: nowIso(), updated_at: nowIso(),
-      limit: config.default_limit, model: config.executor_model || "gpt-6.1-sol", model_label: config.executor_model_label || "GPT-6.1 Sol", reasoning_effort: config.executor_reasoning_effort || "medium", reasoning_effort_label: config.executor_reasoning_effort_label || "中", executor_stage_timeout_minutes: config.executor_stage_timeout_minutes || 30, markets: config.markets.map((item) => item.label),
-      product_families: config.product_families.map((item) => item.label),
-      product_profiles: config.product_families,
+      limit: config.default_limit, model: config.executor_model || "gpt-6.1-sol", model_label: config.executor_model_label || "GPT-6.1 Sol", reasoning_effort: config.executor_reasoning_effort || "medium", reasoning_effort_label: config.executor_reasoning_effort_label || "中", executor_stage_timeout_minutes: config.executor_stage_timeout_minutes || 30, markets: scope.markets.map((item) => item.label),
+      target: scope.target,
+      product_families: scope.profiles.map((item) => item.label),
+      product_profiles: scope.profiles,
       stages: [
         { id: "hq_intake", label: "HQ 路由与分派", status: "pending", detail: "" },
         { id: "preflight", label: "现有名单检查", status: "pending", detail: "" },
